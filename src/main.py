@@ -8,7 +8,7 @@
 import gymnasium as gym
 import sys
 
-SEED = 100
+SEED = 67
 
 # Initialise the environment
 env = gym.make("LunarLander-v3", render_mode="human", continuous=True, enable_wind=True, wind_power=15.0, turbulence_power=1.5)
