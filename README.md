@@ -3,17 +3,8 @@
 ![START TREK](doc/lunar_lander.gif)
 
 ### Development
-By *Ariel Amriou*, *Pierrick Simon* & *Sacha Lemée*.
 
-```
-ariel.amriou@epitech.eu
-```
-```
-pierrick.simon@epitech.eu
-```
-```
-sacha.lemee@epitech.eu
-```
+By *Ariel Amriou*(ariel.amriou@epitech.eu), *Pierrick Simon*(pierrick.simon@epitech.eu) & *Sacha Lemée*(sacha.lemee@epitech.eu).
 
 ## Objective
 
