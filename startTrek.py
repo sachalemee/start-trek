@@ -1,4 +1,4 @@
-##
+#!.venv/bin/python
 ## EPITECH PROJECT, 2026
 ## starttrek
 ## File description:

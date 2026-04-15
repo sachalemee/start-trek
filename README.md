@@ -57,6 +57,6 @@ See [START TREK - Documentation](doc/DOCUMENTATION.md)
 
 ## License
 
-This project is licensed under the **Creative Commons Attribution-ShareAlike 4.0 International License** (CC BY-SA 4.0 DEED).
+This project is licensed under the **MIT License**.
 
-![START TREK - Project license](doc/License_AttributionShareAlike_4.0_International.png)
+![START TREK License : MIT](https://img.shields.io/badge/License-MIT-blue.svg)
