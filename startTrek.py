@@ -6,6 +6,7 @@
 ##
 
 import src.main as main
+import sys
 
 if __name__ == "__main__":
-    main.main()
+    main.main(sys.argv)
