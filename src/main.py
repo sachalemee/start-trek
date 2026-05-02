@@ -19,14 +19,22 @@ NONE = 0
 RECORD = 1
 HUMAN = 2
 
+def remove_videos():
+    files = glob.glob(VIDEOPATH + "/*.mp4")
+    for f in files:
+        os.remove(f)
+    try:
+        os.removedirs(VIDEOPATH)
+    except FileNotFoundError:
+        pass
+
 def help(progname: str):
     print("usage: ", progname, " [--mode {none/record/human}] [--nb-loop {int}]")
     sys.exit(1)
 
-def main(argv: list[str]):
+def parse_argv(argv: list[str]):
     display_mode = NONE
     nb_loop = 0
-
     try:
         mode = argv[argv.index("--mode") + 1]
         if mode.lower() == "none":
@@ -48,7 +56,11 @@ def main(argv: list[str]):
         help(argv[0])
     except ValueError:
         nb_loop = DEFAULT_NBLOOP
-    
+    return display_mode, nb_loop
+
+def main(argv: list[str]):
+    display_mode, nb_loop = parse_argv(argv)
+
     render_mode = "rgb_array"
     if display_mode == HUMAN:
         render_mode = "human"
@@ -58,10 +70,7 @@ def main(argv: list[str]):
     env.reset(seed = SEED)
     
     if display_mode == RECORD:
-        files = glob.glob(VIDEOPATH + "/*.mp4")
-        for f in files:
-            os.remove(f)
-        os.removedirs(VIDEOPATH)
+        remove_videos()
         env = RecordVideo(env, VIDEOPATH, episode_trigger=lambda t: ((t % 10) == 0))
     try:
         for _ in range(nb_loop + 1):
