@@ -10,6 +10,7 @@ from gymnasium.wrappers import RecordVideo
 import sys
 import os
 import glob
+from tqdm import tqdm
 
 SEED = 67
 VIDEOPATH = "./videos"
@@ -73,7 +74,7 @@ def main(argv: list[str]):
         remove_videos()
         env = RecordVideo(env, VIDEOPATH, episode_trigger=lambda t: ((t % 10) == 0))
     try:
-        for _ in range(nb_loop + 1):
+        for _ in tqdm(range(nb_loop + 1)):
             while True:
                 env.render()
                 action = env.action_space.sample()
