@@ -12,6 +12,7 @@ from gymnasium.wrappers import RecordVideo
 import sys
 import os
 import glob
+from tqdm import tqdm
 
 SEED = 67
 VIDEOPATH = "./videos"
@@ -32,7 +33,7 @@ def remove_videos():
         pass
 
 def help(progname: str):
-    print("usage: ", progname, " [--mode {none/record/human}] [--nb-loop {int}]")
+    print("usage: ", progname, " [--mode {none/record/human}] [--nb-loop {int}] [--max-episode-step {int}]")
     sys.exit(1)
 
 def parse_argv(argv: list[str]) -> list[3: int]:
@@ -89,7 +90,7 @@ def main(argv: list[str]):
         remove_videos()
         env = RecordVideo(env, VIDEOPATH, episode_trigger=lambda t: ((t % 10) == 0))
     try:
-        for _ in range(nb_loop):
+        for _ in tqdm(range(nb_loop)):
             terminated = 0
             truncated = 0
             r = 0
