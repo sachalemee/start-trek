@@ -81,7 +81,6 @@ def main(argv: list[str]):
         render_mode = "human"
     
     env = gym.make("LunarLander-v3", max_episode_steps=max_step, render_mode=render_mode, continuous=True, enable_wind=True, wind_power=15.0, turbulence_power=1.5)
-
     obs, _ = env.reset(seed = SEED)
 
     agent: qlearn.Agent = qlearn.QLearningAgent(0.8, 0.95, 0.2)

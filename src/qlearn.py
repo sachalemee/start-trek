@@ -7,42 +7,51 @@
 
 import numpy as np
 from src.agent import Agent
-from math import prod
+# from math import prod
 
-ZOOM_VAL = 3
+EZOOM_VAL = 1
+AZOOM_VAL = 10
 
-# Qtable += [(np.zeros(shape=8) * 10).astype(int), [0., 0.], 0.]
+states_d = (5,5,20,20,round(6.2831855*2),20,2,2)
+action_d = (3,)
 
-# learning_rate = 0.8 # a quel point tu favorise les nouvelles infos
+# lr = 0.8 # a quel point tu favorise les nouvelles infos
 # discount_factor = 0.95 # valuation des récompenses
 # exploration_prob = 0.2 # exploration
-D = [ 2.5, 2.5, 10., 10., 6.2831855, 10.]
-n_states = prod([round(e * ZOOM_VAL) * 2 for e in D])
+
+# ED = [2.5, 2.5, 10., 10., 6.2831855, 10.]
+# n_states = prod([round(e * EZOOM_VAL) * 2 for e in ED])
+
+# AD = [1., 1.]
+# n_actions = prod([round(e * AZOOM_VAL) * 2 for e in AD])
 
 class QLearningAgent(Agent):
 
-    Qtable: np.array = np.zeros(n_states)
+    Qtable: np.array = np.zeros(states_d + action_d)
 
-    learning_rate: float
+    lr: float
     discount: float
     exploration: float
 
-    last_obs: list[8: float] = []
-    last_action: list[2: float] = []
+    ls: list[6: int] = []
+    la: list[2: int] = []
 
-    def __init__(self, learning_rate, discount, exploration):
-        self.learning_rate = learning_rate
+    def __init__(self, lr, discount, exploration):
+        self.lr = lr
         self.discount = discount
         self.exploration = exploration
     
     def process(self, obs: list[8: float]) -> list[6: int]:
-        obs = [round(e * ZOOM_VAL) for e in obs]
-        return obs[:-2]
+        return tuple([round(e * EZOOM_VAL) for e in obs])
 
     def act(self, obs: list[8: float], fallback: callable) -> list[2: float]:
-        self.last_obs = self.process(obs)
-        action = fallback()
-        self.last_action = action
+        self.ls = self.process(obs)
+        if np.random.rand() > self.exploration and self.Qtable[self.ls][0] != 0.:
+            print("used nympho")
+            return self.Qtable[self.ls][1:3]
+        else:
+            action = fallback()
+        self.la = tuple([round(e * AZOOM_VAL) for e in action])
         return action
 
     def learn(self, obs: list[8: float], r: float | None) -> None:
@@ -53,7 +62,14 @@ class QLearningAgent(Agent):
           obs: the observation state as an 8 dimentional vector
           r: the reward of the last episode, or None if it is the first episode
         """
-
         obs = self.process(obs)
-        self.Qtable[self.last_obs] += self.learning_rate * \
-            (r + self.discount * self.Qtable[obs] - self.Qtable[self.last_obs])
+        reward = self.lr * (
+            r + self.discount * np.max(self.Qtable[obs][0]) - self.Qtable[self.ls][0]
+        )
+        if reward > self.Qtable[self.ls][0]:
+            self.Qtable[self.ls][0] = reward
+            self.Qtable[self.ls][1:3] = self.la
+            print("learned new info")
+
+        # print(np.argmax(self.Qtable[self.ls]))
+        # print(self.Qtable[self.ls][np.argmax(self.Qtable[self.ls])])
