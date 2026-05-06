@@ -9,7 +9,7 @@ import numpy as np
 from src.agent import Agent
 from math import prod
 
-ZOOM_VAL = 2
+ZOOM_VAL = 3
 
 # Qtable += [(np.zeros(shape=8) * 10).astype(int), [0., 0.], 0.]
 
@@ -23,9 +23,9 @@ class QLearningAgent(Agent):
 
     Qtable: np.array = np.zeros(n_states)
 
-    learning_rate: float = 0.0
-    discount: float = 0.0
-    exploration: float = 0.0
+    learning_rate: float
+    discount: float
+    exploration: float
 
     last_obs: list[8: float] = []
     last_action: list[2: float] = []
