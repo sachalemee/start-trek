@@ -77,9 +77,7 @@ def main(argv: list[str]):
     args = parser.parse_args()
 
     try:
-        cfg = ParserConfig()
-        cfg.load(args.file)
-        render(cfg)
+        render(ParserConfig(args.file))
     except (FileNotFoundError, KeyError, TypeError, ValueError) as e:
         print(f"StartTrek error: {e}", file=sys.stderr)
         sys.exit(84)

@@ -101,11 +101,11 @@ class ParserConfig:
     algo: str
     seed: int
 
-    def __init__(self):
+    def __init__(self, file: str):
         self.env = EnvConfig()
         self.hyper = HyperConfig()
 
-    def load(self, file: str):
+    # def load(self, file: str):
         path = Path(file)
         if not path.exists():
             raise FileNotFoundError(f"Config file not found: {file}")
