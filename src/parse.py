@@ -1,3 +1,10 @@
+##
+## EPITECH PROJECT, 2026
+## G-AIA-401-PAR-4-1-starttrek-16
+## File description:
+## parse
+##
+
 import yaml
 from enum import Enum
 from typing import Any

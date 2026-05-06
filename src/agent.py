@@ -12,8 +12,8 @@ class AgentMeta(type):
     def __subclasscheck__(cls, subclass):
         return (hasattr(subclass, 'learn') and 
                 callable(subclass.learn) and 
-                hasattr(subclass, 'action') and 
-                callable(subclass.action))
+                hasattr(subclass, 'act') and 
+                callable(subclass.act))
 
 class Agent(metaclass=AgentMeta):
     pass

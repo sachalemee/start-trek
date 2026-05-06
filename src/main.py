@@ -5,8 +5,6 @@
 ## main
 ##
 
-import src.qlearn as qlearn
-
 import gymnasium as gym
 from gymnasium.wrappers import RecordVideo
 import sys
@@ -14,6 +12,10 @@ import argparse
 import os
 import glob
 from tqdm import tqdm
+
+from src.qlearn import QLearningAgent
+from src.dqlearn import DQLearningAgent
+from src.agent import Agent
 
 from src.parse import ParserConfig, HyperConfig, EnvConfig, RenderMode
 
@@ -28,23 +30,34 @@ def remove_videos():
     except FileNotFoundError:
         pass
 
+def load_agent(cfg: ParserConfig) -> {Agent, bool}:
+    agent = Agent()
+    continuous = False
+    if (cfg.algo == "qlearn"):
+        agent = QLearningAgent(0.8, 0.95, 0.2)
+        continuous = True
+    elif (cfg.algo == "dqn"):
+        agent = DQLearningAgent()
+        continuous = False
+    return (agent, continuous)
+
 def render(cfg: ParserConfig):
     render_mode = "rgb_array"
     if cfg.env.render_mode == RenderMode.HUMAN:
         render_mode = "human"
     
+    agent, continuous = load_agent(cfg)
+
     env = gym.make("LunarLander-v3",
                    max_episode_steps=cfg.hyper.max_episode_steps,
                    render_mode=render_mode,
-                   continuous=True,
+                   continuous=continuous,
                    enable_wind=cfg.hyper.enable_wind,
                    wind_power=cfg.hyper.wind_power,
                    turbulence_power=cfg.hyper.turbulence_power
                 )
 
     obs, _ = env.reset(seed = cfg.seed)
-
-    agent: qlearn.Agent = qlearn.QLearningAgent(0.8, 0.95, 0.2)
     
     if cfg.env.render_mode == RenderMode.RECORD:
         remove_videos()
