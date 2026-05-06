@@ -1,0 +1,16 @@
+env: {
+  render_mode: RECORD,
+  model: model,
+  nb_loop: 100,
+}
+
+algo: qlearn
+
+hyper: {
+  max_episode_steps: 100,
+  enable_wind: True,
+  wind_power: 15.0,
+  turbulence_power: 1.5,
+}
+
+seed: 67

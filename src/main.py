@@ -10,18 +10,14 @@ import src.qlearn as qlearn
 import gymnasium as gym
 from gymnasium.wrappers import RecordVideo
 import sys
+import argparse
 import os
 import glob
 from tqdm import tqdm
 
-SEED = 67
-VIDEOPATH = "./videos"
-DEFAULT_NBLOOP = 100
-DEFAULT_MAX_STEP = 100
+from src.parse import ParserConfig, HyperConfig, EnvConfig, RenderMode
 
-NONE = 0
-RECORD = 1
-HUMAN = 2
+VIDEOPATH = "./videos"
 
 def remove_videos():
     files = glob.glob(VIDEOPATH + "/*.mp4")
@@ -32,65 +28,29 @@ def remove_videos():
     except FileNotFoundError:
         pass
 
-def help(progname: str):
-    print("usage: ", progname, " [--mode {none/record/human}] [--nb-loop {int}] [--max-episode-step {int}]")
-    sys.exit(1)
-
-def parse_argv(argv: list[str]) -> list[3: int]:
-    display_mode = RECORD
-    nb_loop = DEFAULT_NBLOOP
-    max_step = DEFAULT_MAX_STEP
-    try:
-        mode = argv[argv.index("--mode") + 1]
-        if mode.lower() == "none":
-            display_mode = NONE
-        elif mode.lower() == "record":
-            display_mode = RECORD
-        elif mode.lower() == "human":
-            display_mode = HUMAN
-        else:
-            help(argv[0])
-    except IndexError:
-        help(argv[0])
-    except ValueError:
-        pass
-
-    try:
-        nb_loop = int(argv[argv.index("--nb-loop") + 1])
-    except IndexError:
-        help(argv[0])
-    except ValueError:
-        pass
-    if nb_loop > 1:
-        nb_loop += 1
-
-    try:
-        max_step = int(argv[argv.index("--max-episode-step") + 1])
-    except IndexError:
-        help(argv[0])
-    except ValueError:
-        pass
-    
-    return display_mode, nb_loop, max_step
-
-def main(argv: list[str]):
-    display_mode, nb_loop, max_step = parse_argv(argv)
-
+def render(cfg: ParserConfig):
     render_mode = "rgb_array"
-    if display_mode == HUMAN:
+    if cfg.env.render_mode == RenderMode.HUMAN:
         render_mode = "human"
     
-    env = gym.make("LunarLander-v3", max_episode_steps=max_step, render_mode=render_mode, continuous=True, enable_wind=True, wind_power=15.0, turbulence_power=1.5)
+    env = gym.make("LunarLander-v3",
+                   max_episode_steps=cfg.hyper.max_episode_steps,
+                   render_mode=render_mode,
+                   continuous=True,
+                   enable_wind=cfg.hyper.enable_wind,
+                   wind_power=cfg.hyper.wind_power,
+                   turbulence_power=cfg.hyper.turbulence_power
+                )
 
-    obs, _ = env.reset(seed = SEED)
+    obs, _ = env.reset(seed = cfg.seed)
 
     agent: qlearn.Agent = qlearn.QLearningAgent(0.8, 0.95, 0.2)
     
-    if display_mode == RECORD:
+    if cfg.env.render_mode == RenderMode.RECORD:
         remove_videos()
         env = RecordVideo(env, VIDEOPATH, episode_trigger=lambda t: ((t % 10) == 0))
     try:
-        for _ in tqdm(range(nb_loop)):
+        for _ in tqdm(range(cfg.env.nb_loop)):
             terminated = 0
             truncated = 0
             r = 0
@@ -108,3 +68,18 @@ def main(argv: list[str]):
     except KeyboardInterrupt:
         pass
     env.close()
+
+def main(argv: list[str]):
+    parser = argparse.ArgumentParser(prog=argv[0])
+    parser.add_argument('file',
+                        help="YAML configs (env, algo, hypers, seeds).",
+                        type=str)
+    args = parser.parse_args()
+
+    try:
+        cfg = ParserConfig()
+        cfg.load(args.file)
+        render(cfg)
+    except (FileNotFoundError, KeyError, TypeError, ValueError) as e:
+        print(f"StartTrek error: {e}", file=sys.stderr)
+        sys.exit(84)
