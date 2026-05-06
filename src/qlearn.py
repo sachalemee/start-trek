@@ -47,7 +47,6 @@ class QLearningAgent(Agent):
     def act(self, obs: list[8: float], fallback: callable) -> list[2: float]:
         self.ls = self.process(obs)
         if np.random.rand() > self.exploration and self.Qtable[self.ls][0] != 0.:
-            print("used nympho")
             return self.Qtable[self.ls][1:3]
         else:
             action = fallback()
@@ -69,7 +68,6 @@ class QLearningAgent(Agent):
         if reward > self.Qtable[self.ls][0]:
             self.Qtable[self.ls][0] = reward
             self.Qtable[self.ls][1:3] = self.la
-            print("learned new info")
 
         # print(np.argmax(self.Qtable[self.ls]))
         # print(self.Qtable[self.ls][np.argmax(self.Qtable[self.ls])])

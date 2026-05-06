@@ -1,0 +1,128 @@
+import yaml
+from enum import Enum
+from typing import Any
+from pathlib import Path
+
+
+class RenderMode(Enum):
+    NONE   = "NONE"
+    RECORD = "RECORD"
+    HUMAN  = "HUMAN"
+
+SUPPORTED_ALGOS = {"qlearn", "dqn"}
+
+def parse_float(key: str, data: dict, positive: bool) -> float:
+    if key in data:
+        value = data.get(key)
+        if not isinstance(value, float):
+            raise TypeError(f"'{key}' must be a float, got {value}")
+        elif positive and value < 0:
+            raise ValueError(f"'{key}' must be positive, got {value}")
+        else:
+            return value
+    raise KeyError(f"Mandatory '{key}' not set")
+
+def parse_int(key: str, data: dict, positive: bool) -> int:
+    if key in data:
+        value = data.get(key)
+        if not isinstance(value, int):
+            raise TypeError(f"'{key}' must be an int, got {value}")
+        elif positive and value < 0:
+            raise ValueError(f"'{key}' must be positive, got {value}")
+        else:
+            return value
+    raise KeyError(f"Mandatory '{key}' not set")
+
+def parse_bool(key: str, data: dict) -> bool:
+    if key in data:
+        value = data.get(key)
+        if not isinstance(value, bool):
+            raise TypeError(f"'{key}' must be a bool, got {value}")
+        else:
+            return value
+    raise KeyError(f"Mandatory '{key}' not set")
+
+def parse_str(key: str, data: dict) -> str:
+    if key in data:
+        value = data.get(key)
+        if not isinstance(value, str):
+            raise TypeError(f"'{key}' must be a str, got {value}")
+        else:
+            return value
+    raise KeyError(f"Mandatory '{key}' not set")
+
+def parse_dict(key: str, data: dict) -> dict:
+    if key in data:
+        value = data.get(key)
+        if not isinstance(value, dict):
+            raise TypeError(f"'{key}' must be a dict, got {value}")
+        else:
+            return value
+    raise KeyError(f"Mandatory '{key}' not set")
+
+def require_keys(data: dict, keys: list[str]) -> None:
+    missing = [k for k in keys if k not in data]
+    if missing:
+        raise KeyError(f"Missing required config key: {missing}")
+
+class EnvConfig:
+    render_mode: RenderMode
+    model: str
+    nb_loop: int
+
+    def load(self, data: dict):
+        raw_mode = data.get("render_mode", "NONE")
+        try:
+            render_mode = RenderMode(raw_mode)
+        except ValueError:
+            valid = [m.value for m in RenderMode]
+            raise ValueError(
+                f"Invalid render_mode '{raw_mode}'. Must be one of: {valid}"
+            )
+        self.render_mode = render_mode
+        self.model = parse_str("model", data)
+        self.nb_loop = parse_int("nb_loop", data, True)
+
+class HyperConfig:
+    max_episode_steps: int
+    enable_wind: bool
+    wind_power: float
+    turbulence_power: float
+
+    def load(self, data: dict):
+        self.max_episode_steps = parse_int("max_episode_steps", data, True)
+        self.enable_wind = parse_bool("enable_wind", data)
+        self.wind_power = parse_float("wind_power", data, True)
+        self.turbulence_power = parse_float("turbulence_power", data, True)
+
+class ParserConfig:
+    env: EnvConfig
+    hyper: HyperConfig
+    algo: str
+    seed: int
+
+    def __init__(self, file: str):
+        self.env = EnvConfig()
+        self.hyper = HyperConfig()
+
+    # def load(self, file: str):
+        path = Path(file)
+        if not path.exists():
+            raise FileNotFoundError(f"Config file not found: {file}")
+        with open(path, "r") as f:
+            data: Any = yaml.load(f, Loader=yaml.SafeLoader)
+        if not isinstance(data, dict):
+            raise ValueError("Config file must be a valid YAML")
+        require_keys(data, ["env", "hyper", "algo", "seed"])
+
+        self.env.load(parse_dict("env", data))
+        self.hyper.load(parse_dict("hyper", data))
+        
+        algo = parse_str("algo", data)
+        if algo not in SUPPORTED_ALGOS:
+            raise ValueError(
+                f"Unknown algo '{algo}'. Supported: {sorted(SUPPORTED_ALGOS)}"
+            )
+        self.algo = algo
+
+        self.seed = parse_int("seed", data, False)
