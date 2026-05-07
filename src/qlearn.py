@@ -7,13 +7,10 @@
 
 import numpy as np
 from src.agent import Agent
-from math import ceil
 
 EZOOM_VAL = 1
-AZOOM_VAL = 10
 
 states_d = (5,5,20,20,15,20,2,2)
-action_d = (20,20)
 
 # lr = 0.8 # a quel point tu favorise les nouvelles infos
 # discount_factor = 0.95 # valuation des récompenses
@@ -27,17 +24,19 @@ action_d = (20,20)
 
 class QLearningAgent(Agent):
 
-    Qtable: np.array = np.zeros(states_d + action_d)
 
+    Qtable: np.array
     lr: float
     discount: float
 
     ls: list[6: int] = []
-    la: list[2: int] = []
+    la: int = -1
 
-    def __init__(self, lr, discount):
+    def __init__(self, lr, discount, action_shape):
         self.lr = lr
         self.discount = discount
+        self.action_shape = action_shape
+        self.Qtable = np.zeros(states_d + action_shape);
     
     def process(self, obs: list[8: float]) -> list[6: int]:
         return tuple([round(e * EZOOM_VAL) for e in obs])
@@ -45,11 +44,11 @@ class QLearningAgent(Agent):
     def act(self, obs: list[8: float], fallback: callable, epsilon: float) -> list[2: float]:
         self.ls = self.process(obs)
         if np.random.rand() > epsilon and np.max(self.Qtable[self.ls]) > 0.:
-            action = divmod(np.argmax(self.Qtable[self.ls]), 20)
-            self.la = tuple(action)
+            action = np.argmax(self.Qtable[self.ls])
+            self.la = action
         else:
             action = fallback()
-            self.la = tuple([round(e * AZOOM_VAL) for e in action])
+            self.la = action
         return action
 
     def learn(self, obs: list[8: float], r: float | None) -> None:

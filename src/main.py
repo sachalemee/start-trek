@@ -30,10 +30,10 @@ def remove_videos():
     except FileNotFoundError:
         pass
 
-def load_agent(cfg: ParserConfig) -> Agent:
+def load_agent(cfg: ParserConfig, env) -> Agent:
     agent = Agent()
     if (cfg.algo == "qlearn"):
-        agent = QLearningAgent(0.8, 0.95)
+        agent = QLearningAgent(0.8, 0.95, env.observation_space.shape)
     elif (cfg.algo == "dqn"):
         agent = DQLearningAgent()
     return agent
@@ -43,15 +43,15 @@ def render(cfg: ParserConfig):
     if cfg.env.render_mode == RenderMode.HUMAN:
         render_mode = "human"
     
-    agent = load_agent(cfg)
-
     env = gym.make("LunarLander-v3",
-                   max_episode_steps=cfg.hyper.max_episode_steps,
-                   render_mode=render_mode,
-                   enable_wind=cfg.hyper.enable_wind,
-                   wind_power=cfg.hyper.wind_power,
-                   turbulence_power=cfg.hyper.turbulence_power
-                )
+        max_episode_steps=cfg.hyper.max_episode_steps,
+        render_mode=render_mode,
+        enable_wind=cfg.hyper.enable_wind,
+        wind_power=cfg.hyper.wind_power,
+        turbulence_power=cfg.hyper.turbulence_power
+    )
+
+    agent = load_agent(cfg, env)
 
     obs, _ = env.reset(seed = cfg.seed)
     
