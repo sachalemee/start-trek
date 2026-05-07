@@ -63,6 +63,8 @@ def render(cfg: ParserConfig):
         remove_videos()
         env = RecordVideo(env, VIDEOPATH, episode_trigger=lambda t: ((t % 10) == 0))
     try:
+        total_r = 0
+        nb_r = 0
         for _ in tqdm(range(cfg.env.nb_loop)):
             terminated = 0
             truncated = 0
@@ -76,11 +78,16 @@ def render(cfg: ParserConfig):
 
                 agent.learn(obs, r)
 
+                total_r += r
+
+            nb_r += 1
+            # print(total_r / nb_r)
             obs, _ = env.reset()
 
     except KeyboardInterrupt:
         pass
     env.close()
+    print(total_r / nb_r)
 
 def main(argv: list[str]):
     parser = argparse.ArgumentParser(prog=argv[0])
@@ -89,8 +96,4 @@ def main(argv: list[str]):
                         type=str)
     args = parser.parse_args()
 
-    try:
-        render(ParserConfig(args.file))
-    except (FileNotFoundError, KeyError, TypeError, ValueError) as e:
-        print(f"StartTrek error: {e}", file=sys.stderr)
-        sys.exit(84)
+    render(ParserConfig(args.file))
