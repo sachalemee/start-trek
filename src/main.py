@@ -6,7 +6,6 @@
 ##
 
 import gymnasium as gym
-from gymnasium.wrappers import RecordVideo
 import argparse
 import shutil
 from tqdm import tqdm
@@ -15,9 +14,6 @@ import os
 
 from src.video import trigger_videos
 from src.mode import Mode
-from src.agent import Agent
-from src.qlearn import QLearningAgent
-from src.dqlearn import DQLearningAgent
 from src.train import TrainMode
 from src.eval import EvalMode
 from src.parse import ParserConfig, RenderMode, RunMode
@@ -25,14 +21,6 @@ from src.parse import ParserConfig, RenderMode, RunMode
 
 CSVPATH = "/csv"
 EPPATH = CSVPATH + "/episodes"
-
-def load_agent(cfg: ParserConfig, env) -> Agent:
-    agent = Agent()
-    if (cfg.algo == "qlearn"):
-        agent = QLearningAgent(cfg.hyper.lr, cfg.hyper.discount, env.observation_space.shape)
-    elif (cfg.algo == "dqn"):
-        agent = DQLearningAgent()
-    return agent
 
 def build_mode(cfg: ParserConfig) -> Mode:
     if cfg.env.run_mode == RunMode.TRAIN:
@@ -69,7 +57,6 @@ def render(cfg: ParserConfig, args):
             shutil.rmtree("data_" + cfg.env.model)
         env = trigger_videos(env, cfg.env.trigger_video, cfg.env.model)
     try:
-        epsilon = cfg.hyper.epsilon_start
         for episode in tqdm(range(cfg.env.nb_loop)):
             terminated = False
             truncated  = False
