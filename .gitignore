@@ -3,3 +3,4 @@ __pycache__
 videos
 test.py
 *.yaml
+data/
