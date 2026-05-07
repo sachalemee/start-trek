@@ -67,7 +67,7 @@ class Network(nn.Module):
         return x
 
 
-class DQLearningAgent(Agent):
+class DQN(Agent):
 
     def __init__(self, state_shape, action_shape, memory_capacity, discount, lr, batchsize, target_update):
         self.discount = discount
