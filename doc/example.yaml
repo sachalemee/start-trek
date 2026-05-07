@@ -4,15 +4,19 @@ env: {
   ### Mandatory ###
   run_mode: TRAIN, # TRAIN, EVAL
   model: model,
-  nb_loop: 100,
-  max_episode_steps: 100,
+  nb_loop: 10000,
+  max_episode_steps: 1000,
   enable_wind: False,
   wind_power: 0.0,
   turbulence_power: 0.0,
   render_mode: RECORD, # HUMAN, RECORD, NONE
 
   ### Mandatory for RECORD render_mode ###
-  trigger_video: 10,
+  trigger_video: 100,
+
+  ### Mandatory for trainning
+  mean: 210, #  Mean to success criteria
+  mean_steps: 100 # on n (here '100') steps
 }
 
 hyper: {
