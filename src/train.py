@@ -22,19 +22,23 @@ class TrainMode(Mode):
 
     def load_agent(self, env: gym.Env) -> Agent:
         if self.cfg.algo == "qlearn":
-            return QLearningAgent(
+            agent = QLearningAgent(
                 self.cfg.hyper.lr,
                 self.cfg.hyper.discount,
                 env.observation_space.shape,
             )
-        return DQLearningAgent(
-            state_shape=env.observation_space.shape,
-            action_shape=env.action_space,
-            memory_capacity=self.cfg.hyper.memory_capacity,
-            discount=self.cfg.hyper.discount,
-            lr=self.cfg.hyper.lr,
-            batchsize=self.cfg.hyper.batchsize,
-        )
+        else:
+            agent = DQLearningAgent(
+                state_shape=env.observation_space.shape,
+                action_shape=env.action_space,
+                memory_capacity=self.cfg.hyper.memory_capacity,
+                discount=self.cfg.hyper.discount,
+                lr=self.cfg.hyper.lr,
+                batchsize=self.cfg.hyper.batchsize,
+            )
+        if self.cfg.env.load:
+            agent.load(self.cfg.env.model)
+        return agent
 
     def step(self, agent: Agent, prev_obs, action, obs, reward, done) -> None:
         agent.learn(prev_obs, action, obs, reward, done)

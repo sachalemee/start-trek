@@ -46,14 +46,17 @@ def parse_int(key: str, data: dict, positive: bool, mandatory: bool = True) -> i
     else:
         return 0
 
-def parse_bool(key: str, data: dict) -> bool:
+def parse_bool(key: str, data: dict, mandatory: bool = True) -> bool:
     if key in data:
         value = data.get(key)
         if not isinstance(value, bool):
             raise TypeError(f"'{key}' must be a bool, got {value}")
         else:
             return value
-    raise KeyError(f"Mandatory '{key}' not set")
+    if (mandatory):
+        raise KeyError(f"Mandatory '{key}' not set")
+    else:
+        return False
 
 def parse_str(key: str, data: dict) -> str:
     if key in data:
@@ -88,6 +91,7 @@ class EnvConfig:
     enable_wind: bool
     wind_power: float
     turbulence_power: float
+    load: float
 
     def load(self, data: dict):
         raw_run_mode = data.get("run_mode", "TRAIN")
@@ -117,6 +121,7 @@ class EnvConfig:
         self.enable_wind = parse_bool("enable_wind", data)
         self.wind_power = parse_float("wind_power", data, True)
         self.turbulence_power = parse_float("turbulence_power", data, True)
+        self.load = parse_bool("load", data, False)
 
 class HyperConfig:
     epsilon_start: float
