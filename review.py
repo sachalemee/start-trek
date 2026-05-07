@@ -8,10 +8,15 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import sys
+import os
 
-def review(df: pd.DataFrame | str):
-    if type(df) == str:
-        df = pd.read_csv(df)
+def review(path: str):
+    try:
+        os.mkdir(path + "/images")
+    except FileExistsError:
+        pass
+    df = pd.read_csv(path + "/csv/episodes.csv")
     fit = np.polyfit(df['episode'], df['total_reward'], 10)
     pf = np.poly1d(fit)
     plt.plot(df['episode'], df['total_reward'], marker='o', linestyle=' ', color='blue')
@@ -22,6 +27,7 @@ def review(df: pd.DataFrame | str):
     ax = plt.gca()
     ax.set_ylim([-600, 600])
     plt.grid()
-    plt.show()
+    plt.savefig(path + "/images/episodes.png")
 
-review('data/csv/episodes.csv')
+
+review(sys.argv[1])
