@@ -10,6 +10,9 @@ from enum import Enum
 from typing import Any
 from pathlib import Path
 
+class RunMode(Enum):
+    TRAIN = "TRAIN"
+    EVAL  = "EVAL"
 
 class RenderMode(Enum):
     NONE   = "NONE"
@@ -29,7 +32,7 @@ def parse_float(key: str, data: dict, positive: bool) -> float:
             return value
     raise KeyError(f"Mandatory '{key}' not set")
 
-def parse_int(key: str, data: dict, positive: bool) -> int:
+def parse_int(key: str, data: dict, positive: bool, mandatory: bool = True) -> int:
     if key in data:
         value = data.get(key)
         if not isinstance(value, int):
@@ -38,7 +41,10 @@ def parse_int(key: str, data: dict, positive: bool) -> int:
             raise ValueError(f"'{key}' must be positive, got {value}")
         else:
             return value
-    raise KeyError(f"Mandatory '{key}' not set")
+    if (mandatory):
+        raise KeyError(f"Mandatory '{key}' not set")
+    else:
+        return 0
 
 def parse_bool(key: str, data: dict) -> bool:
     if key in data:
@@ -73,7 +79,9 @@ def require_keys(data: dict, keys: list[str]) -> None:
         raise KeyError(f"Missing required config key: {missing}")
 
 class EnvConfig:
+    run_mode: RunMode
     render_mode: RenderMode
+    trigger_video: int
     model: str
     nb_loop: int
     max_episode_steps: int
@@ -82,15 +90,27 @@ class EnvConfig:
     turbulence_power: float
 
     def load(self, data: dict):
-        raw_mode = data.get("render_mode", "NONE")
+        raw_run_mode = data.get("run_mode", "TRAIN")
         try:
-            render_mode = RenderMode(raw_mode)
+            run_mode = RunMode(raw_run_mode)
+        except ValueError:
+            valid = [m.value for m in RunMode]
+            raise ValueError(
+                f"Invalid run_mode '{raw_run_mode}'. Must be one of: {valid}"
+            )
+
+        self.run_mode = run_mode
+        raw_render_mode = data.get("render_mode", "NONE")
+        try:
+            render_mode = RenderMode(raw_render_mode)
         except ValueError:
             valid = [m.value for m in RenderMode]
             raise ValueError(
-                f"Invalid render_mode '{raw_mode}'. Must be one of: {valid}"
+                f"Invalid render_mode '{raw_render_mode}'. Must be one of: {valid}"
             )
+
         self.render_mode = render_mode
+        self.trigger_video = parse_int("trigger_video", data, True, (self.render_mode == RenderMode.RECORD))
         self.model = parse_str("model", data)
         self.nb_loop = parse_int("nb_loop", data, True)
         self.max_episode_steps = parse_int("max_episode_steps", data, True)
@@ -104,13 +124,17 @@ class HyperConfig:
     epsilon_decay: float
     discount: float
     lr: float
+    batchsize: int
+    memory_capacity: int
 
-    def load(self, data: dict):
+    def load(self, data: dict, algo: str):
         self.epsilon_start = parse_float("epsilon_start", data, True)
         self.epsilon_end = parse_float("epsilon_end", data, True)
         self.epsilon_decay = parse_float("epsilon_start", data, True)
         self.discount = parse_float("discount", data, True)
         self.lr = parse_float("discount", data, True)
+        self.batchsize = parse_int("batchsize", data, True, (algo == "dqn"))
+        self.memory_capacity = parse_int("memory_capacity", data, True, (algo == "dqn"))
 
 class ParserConfig:
     env: EnvConfig
@@ -122,7 +146,6 @@ class ParserConfig:
         self.env = EnvConfig()
         self.hyper = HyperConfig()
 
-    # def load(self, file: str):
         path = Path(file)
         if not path.exists():
             raise FileNotFoundError(f"Config file not found: {file}")
@@ -132,9 +155,6 @@ class ParserConfig:
             raise ValueError("Config file must be a valid YAML")
         require_keys(data, ["env", "hyper", "algo", "seed"])
 
-        self.env.load(parse_dict("env", data))
-        self.hyper.load(parse_dict("hyper", data))
-        
         algo = parse_str("algo", data)
         if algo not in SUPPORTED_ALGOS:
             raise ValueError(
@@ -143,3 +163,6 @@ class ParserConfig:
         self.algo = algo
 
         self.seed = parse_int("seed", data, False)
+
+        self.env.load(parse_dict("env", data))
+        self.hyper.load(parse_dict("hyper", data), self.algo)
