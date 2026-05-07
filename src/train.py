@@ -43,5 +43,10 @@ class TrainMode(Mode):
             self.epsilon * self.cfg.hyper.epsilon_decay,
         )
 
+    def record_episode_score(self, episode_score: float) -> bool:
+        self.episodes_score.append(episode_score)
+
+        return False
+
     def end(self, agent: Agent) -> None:
         agent.save(self.cfg.env.model)

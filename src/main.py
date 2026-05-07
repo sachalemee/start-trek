@@ -63,6 +63,8 @@ def render(cfg: ParserConfig):
 
                 total_r += r
 
+            success = mode.record_episode_score(total_r)
+
             nb_r += 1
             obs, _ = env.reset()
         mode.end(agent)
