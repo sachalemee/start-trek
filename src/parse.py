@@ -10,6 +10,9 @@ from enum import Enum
 from typing import Any
 from pathlib import Path
 
+class RunMode(Enum):
+    TRAIN = "TRAIN"
+    EVAL  = "EVAL"
 
 class RenderMode(Enum):
     NONE   = "NONE"
@@ -76,6 +79,7 @@ def require_keys(data: dict, keys: list[str]) -> None:
         raise KeyError(f"Missing required config key: {missing}")
 
 class EnvConfig:
+    run_mode: RunMode
     render_mode: RenderMode
     trigger_video: int
     model: str
@@ -86,16 +90,27 @@ class EnvConfig:
     turbulence_power: float
 
     def load(self, data: dict):
-        raw_mode = data.get("render_mode", "NONE")
+        raw_run_mode = data.get("run_mode", "TRAIN")
         try:
-            render_mode = RenderMode(raw_mode)
+            run_mode = RunMode(raw_run_mode)
+        except ValueError:
+            valid = [m.value for m in RunMode]
+            raise ValueError(
+                f"Invalid run_mode '{raw_run_mode}'. Must be one of: {valid}"
+            )
+
+        self.run_mode = run_mode
+        raw_render_mode = data.get("render_mode", "NONE")
+        try:
+            render_mode = RenderMode(raw_render_mode)
         except ValueError:
             valid = [m.value for m in RenderMode]
             raise ValueError(
-                f"Invalid render_mode '{raw_mode}'. Must be one of: {valid}"
+                f"Invalid render_mode '{raw_render_mode}'. Must be one of: {valid}"
             )
+
         self.render_mode = render_mode
-        self.trigger_video = parse_int("trigger_video", data, True, (render_mode == RenderMode.RECORD))
+        self.trigger_video = parse_int("trigger_video", data, True, (self.render_mode == RenderMode.RECORD))
         self.model = parse_str("model", data)
         self.nb_loop = parse_int("nb_loop", data, True)
         self.max_episode_steps = parse_int("max_episode_steps", data, True)
@@ -131,7 +146,6 @@ class ParserConfig:
         self.env = EnvConfig()
         self.hyper = HyperConfig()
 
-    # def load(self, file: str):
         path = Path(file)
         if not path.exists():
             raise FileNotFoundError(f"Config file not found: {file}")

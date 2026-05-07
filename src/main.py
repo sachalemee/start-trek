@@ -6,92 +6,68 @@
 ##
 
 import gymnasium as gym
-from gymnasium.wrappers import RecordVideo
-import sys
 import argparse
-import os
-import glob
 from tqdm import tqdm
 
-from src.qlearn import QLearningAgent
-from src.dqlearn import DQLearningAgent
-from src.agent import Agent
+from src.video import trigger_videos
+from src.mode import Mode
+from src.train import TrainMode
+from src.eval import EvalMode
+from src.parse import ParserConfig, RenderMode, RunMode
 
-from src.parse import ParserConfig, HyperConfig, EnvConfig, RenderMode
-
-VIDEOPATH = "./videos"
-
-def remove_videos():
-    files = glob.glob(VIDEOPATH + "/*.mp4")
-    for f in files:
-        os.remove(f)
-    try:
-        os.removedirs(VIDEOPATH)
-    except FileNotFoundError:
-        pass
-
-def load_agent(cfg: ParserConfig, env: gym.Env) -> Agent:
-    agent = Agent()
-    if (cfg.algo == "qlearn"):
-        agent = QLearningAgent(cfg.hyper.lr, cfg.hyper.discount, env.observation_space.shape)
-    elif (cfg.algo == "dqn"):
-        agent = DQLearningAgent(
-          state_shape=env.observation_space.shape,
-          action_shape=env.action_space,
-          memory_capacity=cfg.hyper.memory_capacity,
-          discount=cfg.hyper.discount,
-          lr=cfg.hyper.lr,
-          batchsize=cfg.hyper.batchsize
-      )
-    return agent
+def build_mode(cfg: ParserConfig) -> Mode:
+    if cfg.env.run_mode == RunMode.TRAIN:
+        return TrainMode(cfg)
+    return EvalMode(cfg)
 
 def render(cfg: ParserConfig):
     render_mode = "rgb_array"
     if cfg.env.render_mode == RenderMode.HUMAN:
         render_mode = "human"
-    
-    env = gym.make("LunarLander-v3",
+ 
+    env = gym.make(
+        "LunarLander-v3",
         max_episode_steps=cfg.env.max_episode_steps,
         render_mode=render_mode,
         enable_wind=cfg.env.enable_wind,
         wind_power=cfg.env.wind_power,
-        turbulence_power=cfg.env.turbulence_power
+        turbulence_power=cfg.env.turbulence_power,
     )
-
-    agent = load_agent(cfg, env)
-
-    obs, _ = env.reset(seed = cfg.seed)
-    
+ 
+    mode  = build_mode(cfg)
+    agent = mode.load_agent(env)
+ 
+    obs, _ = env.reset(seed=cfg.seed)
+ 
     if cfg.env.render_mode == RenderMode.RECORD:
-        remove_videos()
-        env = RecordVideo(env, VIDEOPATH, episode_trigger=lambda t: ((t % cfg.env.trigger_video) == 0))
+        env = trigger_videos(env, cfg.env.trigger_video)
+ 
     try:
         total_r = 0
         nb_r = 0
-        epsilon = cfg.hyper.epsilon_start
+
         for _ in tqdm(range(cfg.env.nb_loop)):
-            terminated = 0
-            truncated = 0
-            r = 0
+            terminated = False
+            truncated  = False
+ 
             while not (terminated or truncated):
                 env.render()
-
+ 
                 prev_obs = obs
-                action = agent.act(obs, env.action_space.sample, epsilon)
-
+                action   = agent.act(obs, env.action_space.sample, mode.epsilon)
+ 
                 obs, r, terminated, truncated, _ = env.step(action)
+                done = terminated or truncated
 
-                agent.learn(prev_obs, action, obs, r, terminated)
-
-                epsilon = max(cfg.hyper.epsilon_end, epsilon * cfg.hyper.epsilon_decay)
+                mode.step(agent, prev_obs, action, obs, r, done)
 
                 total_r += r
 
             nb_r += 1
             obs, _ = env.reset()
-
+        mode.end(agent)
     except KeyboardInterrupt:
-        pass
+        mode.end(agent)
     env.close()
     print(total_r / nb_r)
 

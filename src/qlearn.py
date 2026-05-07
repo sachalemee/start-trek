@@ -36,12 +36,12 @@ class QLearningAgent(Agent):
         self.lr = lr
         self.discount = discount
         self.action_shape = action_shape
-        self.Qtable = np.zeros(states_d + action_shape);
+        self.Qtable = np.zeros(states_d + action_shape)
     
     def process(self, obs: list[8: float]) -> list[6: int]:
         return tuple([round(e * EZOOM_VAL) for e in obs])
 
-    def act(self, obs: list[8: float], fallback: callable, epsilon: float) -> list[2: float]:
+    def act(self, obs: list[8: float], fallback: callable, epsilon: float = 0.0) -> list[2: float]:
         self.ls = self.process(obs)
         if np.random.rand() > epsilon and np.max(self.Qtable[self.ls]) > 0.:
             action = np.argmax(self.Qtable[self.ls])

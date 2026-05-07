@@ -1,7 +1,8 @@
-algo: qlearn # dqn or qlearn
+algo: dqn # dqn or qlearn
 
 env: {
   ### Mandatory ###
+  run_mode: TRAIN, # TRAIN, EVAL
   model: model,
   nb_loop: 100,
   max_episode_steps: 100,
