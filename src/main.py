@@ -44,7 +44,6 @@ def render(cfg: ParserConfig):
  
     try:
         total_r = 0
-        nb_r = 0
 
         for _ in tqdm(range(cfg.env.nb_loop)):
             terminated = False
@@ -65,13 +64,15 @@ def render(cfg: ParserConfig):
 
             success = mode.record_episode_score(total_r)
 
-            nb_r += 1
             obs, _ = env.reset()
+
+            if success:
+                break
+
         mode.end(agent)
     except KeyboardInterrupt:
         mode.end(agent)
     env.close()
-    print(total_r / nb_r)
 
 def main(argv: list[str]):
     parser = argparse.ArgumentParser(prog=argv[0])
