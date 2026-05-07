@@ -10,7 +10,7 @@ import gymnasium as gym
 from src.mode import Mode
 from src.parse import ParserConfig
 from src.agent import Agent
-from src.dqlearn import DQLearningAgent
+from src.dqn import DQN
 from src.qlearn import QLearningAgent
 
 
@@ -28,13 +28,14 @@ class EvalMode(Mode):
                 env.observation_space.shape,
             )
         else:
-            agent = DQLearningAgent(
+            agent = DQN(
                 state_shape=env.observation_space.shape,
                 action_shape=env.action_space,
                 memory_capacity=self.cfg.hyper.memory_capacity,
                 discount=self.cfg.hyper.discount,
                 lr=self.cfg.hyper.lr,
                 batchsize=self.cfg.hyper.batchsize,
+                target_update=self.cfg.hyper.target_update
             )
         agent.load(self.cfg.env.model)
         return agent
