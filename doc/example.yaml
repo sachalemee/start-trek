@@ -3,16 +3,19 @@ algo: dqn # dqn or qlearn
 env: {
   ### Mandatory ###
   run_mode: TRAIN, # TRAIN, EVAL
-  model: model,
-  nb_loop: 100,
-  max_episode_steps: 100,
+  model: dqn_model,
+  nb_loop: 10000,
+  max_episode_steps: 500,
   enable_wind: False,
   wind_power: 0.0,
   turbulence_power: 0.0,
   render_mode: RECORD, # HUMAN, RECORD, NONE
 
   ### Mandatory for RECORD render_mode ###
-  trigger_video: 10,
+  trigger_video: 100,
+
+  ### Optional for Train ###
+  load: TRUE,
 }
 
 hyper: {
