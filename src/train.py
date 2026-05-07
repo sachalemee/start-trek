@@ -51,4 +51,4 @@ class TrainMode(Mode):
         )
 
     def end(self, agent: Agent) -> None:
-        agent.save(self.cfg.env.model)
+        agent.save("data_" + self.cfg.env.model + "/model")
