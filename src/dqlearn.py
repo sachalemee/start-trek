@@ -69,7 +69,7 @@ class Network(nn.Module):
 
 class DQLearningAgent(Agent):
 
-    def __init__(self, state_shape, action_shape, memory_capacity, discount, lr, batchsize):
+    def __init__(self, state_shape, action_shape, memory_capacity, discount, lr, batchsize, target_update):
         self.discount = discount
         self.batchsize = batchsize
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -78,9 +78,12 @@ class DQLearningAgent(Agent):
         self.target = Network(state_shape[0], action_shape.n, lr).to(self.device)
         self.target.eval()
         self.update_target()
+        self.target_update = target_update
+        self.last_update = 0
 
     def update_target(self):
         self.target.load_state_dict(self.online.state_dict())
+        self.last_update = 0
 
     def act(self, obs, fallback: callable, epsilon: float = 0.0):
         if random.random() < epsilon:
@@ -95,6 +98,10 @@ class DQLearningAgent(Agent):
         self.memory.store(state, action, next_state, reward, done)
         if len(self.memory) < self.batchsize:
             return
+        if self.target_update < self.last_update:
+            self.update_target()
+        else:
+            self.last_update += 1
 
         states, actions, next_states, rewards, dones = self.memory.sample(self.batchsize)
 

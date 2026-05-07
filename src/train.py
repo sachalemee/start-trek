@@ -6,6 +6,7 @@
 ##
 
 import gymnasium as gym
+from pathlib import Path
 
 from src.mode import Mode
 from src.parse import ParserConfig
@@ -35,8 +36,10 @@ class TrainMode(Mode):
                 discount=self.cfg.hyper.discount,
                 lr=self.cfg.hyper.lr,
                 batchsize=self.cfg.hyper.batchsize,
+                target_update=self.cfg.hyper.target_update
             )
-        if self.cfg.env.load:
+        file = Path(self.cfg.env.model)
+        if self.cfg.env.load and file.is_file():
             agent.load(self.cfg.env.model)
         return agent
 

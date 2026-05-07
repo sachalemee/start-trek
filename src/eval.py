@@ -35,6 +35,7 @@ class EvalMode(Mode):
                 discount=self.cfg.hyper.discount,
                 lr=self.cfg.hyper.lr,
                 batchsize=self.cfg.hyper.batchsize,
+                target_update=self.cfg.hyper.target_update
             )
         agent.load(self.cfg.env.model)
         return agent

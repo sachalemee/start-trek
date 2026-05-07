@@ -131,6 +131,7 @@ class HyperConfig:
     lr: float
     batchsize: int
     memory_capacity: int
+    target_update: int
 
     def load(self, data: dict, algo: str):
         self.epsilon_start = parse_float("epsilon_start", data, True)
@@ -140,6 +141,7 @@ class HyperConfig:
         self.lr = parse_float("discount", data, True)
         self.batchsize = parse_int("batchsize", data, True, (algo == "dqn"))
         self.memory_capacity = parse_int("memory_capacity", data, True, (algo == "dqn"))
+        self.target_update = parse_int("target_update", data, True, (algo == "dqn"))
 
 class ParserConfig:
     env: EnvConfig

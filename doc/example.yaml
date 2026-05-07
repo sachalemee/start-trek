@@ -15,7 +15,7 @@ env: {
   trigger_video: 100,
 
   ### Optional for Train ###
-  load: TRUE,
+  load: True,
 }
 
 hyper: {
@@ -27,7 +27,8 @@ hyper: {
 
   ### Mandatory for dqn algo ###
   batchsize: 64,
-  memory_capacity: 10000,
+  memory_capacity: 100000,
+  target_update: 1000,
 }
 
 seed: 67
