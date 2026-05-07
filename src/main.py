@@ -84,7 +84,6 @@ def render(cfg: ParserConfig):
                 total_r += r
 
             nb_r += 1
-            # print(total_r / nb_r)
             obs, _ = env.reset()
 
     except KeyboardInterrupt:
