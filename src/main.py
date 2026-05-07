@@ -33,7 +33,7 @@ def remove_videos():
 def load_agent(cfg: ParserConfig) -> Agent:
     agent = Agent()
     if (cfg.algo == "qlearn"):
-        agent = QLearningAgent(0.8, 0.95)
+        agent = QLearningAgent(cfg.hyper.lr, cfg.hyper.discount)
     elif (cfg.algo == "dqn"):
         agent = DQLearningAgent()
     return agent
@@ -46,11 +46,11 @@ def render(cfg: ParserConfig):
     agent = load_agent(cfg)
 
     env = gym.make("LunarLander-v3",
-                   max_episode_steps=cfg.hyper.max_episode_steps,
+                   max_episode_steps=cfg.env.max_episode_steps,
                    render_mode=render_mode,
-                   enable_wind=cfg.hyper.enable_wind,
-                   wind_power=cfg.hyper.wind_power,
-                   turbulence_power=cfg.hyper.turbulence_power
+                   enable_wind=cfg.env.enable_wind,
+                   wind_power=cfg.env.wind_power,
+                   turbulence_power=cfg.env.turbulence_power
                 )
 
     obs, _ = env.reset(seed = cfg.seed)
@@ -61,7 +61,7 @@ def render(cfg: ParserConfig):
     try:
         total_r = 0
         nb_r = 0
-        epsilon = 1.0
+        epsilon = cfg.hyper.epsilon_start
         for _ in tqdm(range(cfg.env.nb_loop)):
             terminated = 0
             truncated = 0
@@ -75,7 +75,7 @@ def render(cfg: ParserConfig):
 
                 agent.learn(obs, r)
 
-                epsilon = max(0.0, epsilon * 0.995)
+                epsilon = max(cfg.hyper.epsilon_end, epsilon * cfg.hyper.epsilon_decay)
 
                 total_r += r
 

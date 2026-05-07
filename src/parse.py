@@ -76,6 +76,10 @@ class EnvConfig:
     render_mode: RenderMode
     model: str
     nb_loop: int
+    max_episode_steps: int
+    enable_wind: bool
+    wind_power: float
+    turbulence_power: float
 
     def load(self, data: dict):
         raw_mode = data.get("render_mode", "NONE")
@@ -89,18 +93,24 @@ class EnvConfig:
         self.render_mode = render_mode
         self.model = parse_str("model", data)
         self.nb_loop = parse_int("nb_loop", data, True)
-
-class HyperConfig:
-    max_episode_steps: int
-    enable_wind: bool
-    wind_power: float
-    turbulence_power: float
-
-    def load(self, data: dict):
         self.max_episode_steps = parse_int("max_episode_steps", data, True)
         self.enable_wind = parse_bool("enable_wind", data)
         self.wind_power = parse_float("wind_power", data, True)
         self.turbulence_power = parse_float("turbulence_power", data, True)
+
+class HyperConfig:
+    epsilon_start: float
+    epsilon_end: float
+    epsilon_decay: float
+    discount: float
+    lr: float
+
+    def load(self, data: dict):
+        self.epsilon_start = parse_float("epsilon_start", data, True)
+        self.epsilon_end = parse_float("epsilon_end", data, True)
+        self.epsilon_decay = parse_float("epsilon_start", data, True)
+        self.discount = parse_float("discount", data, True)
+        self.lr = parse_float("discount", data, True)
 
 class ParserConfig:
     env: EnvConfig
