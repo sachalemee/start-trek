@@ -17,7 +17,7 @@ from src.video import trigger_videos
 from src.mode import Mode
 from src.agent import Agent
 from src.qlearn import QLearningAgent
-from src.dqlearn import DQLearningAgent
+from src.dqn import DQN
 from src.train import TrainMode
 from src.eval import EvalMode
 from src.parse import ParserConfig, RenderMode, RunMode
