@@ -66,3 +66,8 @@ class QLearningAgent(Agent):
         old_value = self.Qtable[self.ls][self.la]
         self.Qtable[self.ls][self.la] = (1-self.lr) * old_value + self.lr * learned_value
 
+    def save(self, filename) -> None:
+        return
+    
+    def load(self, filename) -> None:
+        return

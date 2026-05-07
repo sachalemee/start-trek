@@ -109,3 +109,10 @@ class DQLearningAgent(Agent):
         loss = F.mse_loss(y_j, q_pred)
         loss.backward()
         self.online.optimizer.step()
+
+    def save(self, filename) -> None:
+        torch.save(self.online.state_dict(), filename)
+    
+    def load(self, filename) -> None:
+        self.online.load_state_dict(torch.load(filename))
+        self.online.eval()
