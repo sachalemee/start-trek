@@ -42,6 +42,9 @@ class EvalMode(Mode):
 
     def step(self, agent: Agent, prev_obs, action, obs, reward, done) -> None:
         pass
+    
+    def record_episode_score(self, episode_score: float) -> bool:
+        pass
 
     def end(self, agent: Agent) -> None:
         pass

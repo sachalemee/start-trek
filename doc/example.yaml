@@ -2,8 +2,8 @@ algo: dqn # dqn or qlearn
 
 env: {
   ### Mandatory ###
-  run_mode: TRAIN, # TRAIN, EVAL
-  model: dqn_model,
+  run_mode: EVAL, # TRAIN, EVAL
+  model: data_dqn_model/model,
   nb_loop: 10000,
   max_episode_steps: 500,
   enable_wind: False,
