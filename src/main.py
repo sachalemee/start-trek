@@ -30,7 +30,7 @@ def remove_videos():
     except FileNotFoundError:
         pass
 
-def load_agent(cfg: ParserConfig, env) -> Agent:
+def load_agent(cfg: ParserConfig, env: gym.Env) -> Agent:
     agent = Agent()
     if (cfg.algo == "qlearn"):
         agent = QLearningAgent(cfg.hyper.lr, cfg.hyper.discount, env.observation_space.shape)
@@ -57,7 +57,7 @@ def render(cfg: ParserConfig):
     
     if cfg.env.render_mode == RenderMode.RECORD:
         remove_videos()
-        env = RecordVideo(env, VIDEOPATH, episode_trigger=lambda t: ((t % 10) == 0))
+        env = RecordVideo(env, VIDEOPATH, episode_trigger=lambda t: ((t % cfg.env.trigger_video) == 0))
     try:
         total_r = 0
         nb_r = 0
