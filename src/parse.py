@@ -119,8 +119,8 @@ class EnvConfig:
         self.enable_wind = parse_bool("enable_wind", data)
         self.wind_power = parse_float("wind_power", data, True)
         self.turbulence_power = parse_float("turbulence_power", data, True)
-        self.mean = parse_int("mean", data, True)
-        self.mean_steps = parse_int("mean_steps", data, True)
+        self.mean = parse_int("mean", data, True, (self.render_mode == RunMode.TRAIN))
+        self.mean_steps = parse_int("mean_steps", data, True, (self.render_mode == RunMode.TRAIN))
 
 class HyperConfig:
     epsilon_start: float
@@ -130,8 +130,6 @@ class HyperConfig:
     lr: float
     batchsize: int
     memory_capacity: int
-    mean: int
-    mean_steps: int
 
     def load(self, data: dict, algo: str):
         self.epsilon_start = parse_float("epsilon_start", data, True)
@@ -141,8 +139,6 @@ class HyperConfig:
         self.lr = parse_float("discount", data, True)
         self.batchsize = parse_int("batchsize", data, True, (algo == "dqn"))
         self.memory_capacity = parse_int("memory_capacity", data, True, (algo == "dqn"))
-        self.mean = parse_int("mean", data, True, (algo == "dqn"))
-        self.mean_steps = parse_int("mean_steps", data, True, (algo == "dqn"))
 
 class ParserConfig:
     env: EnvConfig
