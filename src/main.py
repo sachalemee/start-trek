@@ -34,7 +34,7 @@ def load_agent(cfg: ParserConfig) -> {Agent, bool}:
     agent = Agent()
     continuous = False
     if (cfg.algo == "qlearn"):
-        agent = QLearningAgent(0.8, 0.95, 0.2)
+        agent = QLearningAgent(0.8, 0.95)
         continuous = True
     elif (cfg.algo == "dqn"):
         agent = DQLearningAgent()
@@ -65,6 +65,7 @@ def render(cfg: ParserConfig):
     try:
         total_r = 0
         nb_r = 0
+        epsilon = 1.0
         for _ in tqdm(range(cfg.env.nb_loop)):
             terminated = 0
             truncated = 0
@@ -72,11 +73,13 @@ def render(cfg: ParserConfig):
             while not (terminated or truncated):
                 env.render()
 
-                action = agent.act(obs, env.action_space.sample)
+                action = agent.act(obs, env.action_space.sample, epsilon)
 
                 obs, r, terminated, truncated, _ = env.step(action)
 
                 agent.learn(obs, r)
+
+                epsilon = max(0.0, epsilon * 0.995)
 
                 total_r += r
 

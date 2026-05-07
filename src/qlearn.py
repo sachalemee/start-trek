@@ -31,23 +31,20 @@ class QLearningAgent(Agent):
 
     lr: float
     discount: float
-    exploration: float
 
     ls: list[6: int] = []
     la: list[2: int] = []
 
-    def __init__(self, lr, discount, exploration):
+    def __init__(self, lr, discount):
         self.lr = lr
         self.discount = discount
-        self.exploration = exploration
     
     def process(self, obs: list[8: float]) -> list[6: int]:
         return tuple([round(e * EZOOM_VAL) for e in obs])
 
-    def act(self, obs: list[8: float], fallback: callable) -> list[2: float]:
+    def act(self, obs: list[8: float], fallback: callable, epsilon: float) -> list[2: float]:
         self.ls = self.process(obs)
-        action = fallback()
-        if np.random.rand() > self.exploration and np.max(self.Qtable[self.ls]) > 0.:
+        if np.random.rand() > epsilon and np.max(self.Qtable[self.ls]) > 0.:
             action = divmod(np.argmax(self.Qtable[self.ls]), 20)
             self.la = tuple(action)
         else:

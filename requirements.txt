@@ -3,3 +3,4 @@ pygame
 moviepy
 tqdm
 pyyaml
+torch
