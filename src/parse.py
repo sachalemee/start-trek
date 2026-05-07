@@ -46,14 +46,17 @@ def parse_int(key: str, data: dict, positive: bool, mandatory: bool = True) -> i
     else:
         return 0
 
-def parse_bool(key: str, data: dict) -> bool:
+def parse_bool(key: str, data: dict, mandatory: bool = True) -> bool:
     if key in data:
         value = data.get(key)
         if not isinstance(value, bool):
             raise TypeError(f"'{key}' must be a bool, got {value}")
         else:
             return value
-    raise KeyError(f"Mandatory '{key}' not set")
+    if (mandatory):
+        raise KeyError(f"Mandatory '{key}' not set")
+    else:
+        return False
 
 def parse_str(key: str, data: dict) -> str:
     if key in data:
@@ -90,6 +93,7 @@ class EnvConfig:
     turbulence_power: float
     mean: int
     mean_steps: int
+    load: float
 
     def load(self, data: dict):
         raw_run_mode = data.get("run_mode", "TRAIN")
@@ -121,6 +125,7 @@ class EnvConfig:
         self.turbulence_power = parse_float("turbulence_power", data, True)
         self.mean = parse_int("mean", data, True, (self.render_mode == RunMode.TRAIN))
         self.mean_steps = parse_int("mean_steps", data, True, (self.render_mode == RunMode.TRAIN))
+        self.load = parse_bool("load", data, False)
 
 class HyperConfig:
     epsilon_start: float
@@ -130,6 +135,7 @@ class HyperConfig:
     lr: float
     batchsize: int
     memory_capacity: int
+    target_update: int
 
     def load(self, data: dict, algo: str):
         self.epsilon_start = parse_float("epsilon_start", data, True)
@@ -139,6 +145,7 @@ class HyperConfig:
         self.lr = parse_float("discount", data, True)
         self.batchsize = parse_int("batchsize", data, True, (algo == "dqn"))
         self.memory_capacity = parse_int("memory_capacity", data, True, (algo == "dqn"))
+        self.target_update = parse_int("target_update", data, True, (algo == "dqn"))
 
 class ParserConfig:
     env: EnvConfig

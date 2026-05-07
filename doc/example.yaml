@@ -3,9 +3,9 @@ algo: dqn # dqn or qlearn
 env: {
   ### Mandatory ###
   run_mode: TRAIN, # TRAIN, EVAL
-  model: model,
+  model: dqn_model,
   nb_loop: 10000,
-  max_episode_steps: 1000,
+  max_episode_steps: 500,
   enable_wind: False,
   wind_power: 0.0,
   turbulence_power: 0.0,
@@ -14,9 +14,12 @@ env: {
   ### Mandatory for RECORD render_mode ###
   trigger_video: 100,
 
-  ### Mandatory for trainning
+  ### Mandatory for trainning ###
   mean: 210, #  Mean to success criteria
-  mean_steps: 100 # on n (here '100') steps
+  mean_steps: 100, # on n (here '100') steps
+
+  ### Optional for Train ###
+  load: True
 }
 
 hyper: {
@@ -28,7 +31,8 @@ hyper: {
 
   ### Mandatory for dqn algo ###
   batchsize: 64,
-  memory_capacity: 10000,
+  memory_capacity: 100000,
+  target_update: 1000,
 }
 
 seed: 67

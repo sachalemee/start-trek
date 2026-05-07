@@ -6,13 +6,14 @@
 ##
 
 import gymnasium as gym
+from pathlib import Path
 
 from collections import deque
 
 from src.mode import Mode
 from src.parse import ParserConfig
 from src.agent import Agent
-from src.dqlearn import DQLearningAgent
+from src.dqn import DQNAgent
 from src.qlearn import QLearningAgent
 
 class TrainMode(Mode):
@@ -24,19 +25,25 @@ class TrainMode(Mode):
 
     def load_agent(self, env: gym.Env) -> Agent:
         if self.cfg.algo == "qlearn":
-            return QLearningAgent(
+            agent = QLearningAgent(
                 self.cfg.hyper.lr,
                 self.cfg.hyper.discount,
                 env.observation_space.shape,
             )
-        return DQLearningAgent(
-            state_shape=env.observation_space.shape,
-            action_shape=env.action_space,
-            memory_capacity=self.cfg.hyper.memory_capacity,
-            discount=self.cfg.hyper.discount,
-            lr=self.cfg.hyper.lr,
-            batchsize=self.cfg.hyper.batchsize,
-        )
+        else:
+            agent = DQNAgent(
+                state_shape=env.observation_space.shape,
+                action_shape=env.action_space,
+                memory_capacity=self.cfg.hyper.memory_capacity,
+                discount=self.cfg.hyper.discount,
+                lr=self.cfg.hyper.lr,
+                batchsize=self.cfg.hyper.batchsize,
+                target_update=self.cfg.hyper.target_update
+            )
+        file = Path(self.cfg.env.model)
+        if self.cfg.env.load and file.is_file():
+            agent.load(self.cfg.env.model)
+        return agent
 
     def step(self, agent: Agent, prev_obs, action, obs, reward, done) -> None:
         agent.learn(prev_obs, action, obs, reward, done)
@@ -55,4 +62,4 @@ class TrainMode(Mode):
         return False
 
     def end(self, agent: Agent) -> None:
-        agent.save(self.cfg.env.model)
+        agent.save("data_" + self.cfg.env.model + "/model")
