@@ -51,7 +51,7 @@ class QLearningAgent(Agent):
             self.la = action
         return action
 
-    def learn(self, obs: list[8: float], r: float | None) -> None:
+    def learn(self, prev_obs, action, obs, r, terminated) -> None:
         """
         Calculate the best move to get the highest reward
 

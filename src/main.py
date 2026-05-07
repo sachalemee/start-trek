@@ -35,7 +35,14 @@ def load_agent(cfg: ParserConfig, env: gym.Env) -> Agent:
     if (cfg.algo == "qlearn"):
         agent = QLearningAgent(cfg.hyper.lr, cfg.hyper.discount, env.observation_space.shape)
     elif (cfg.algo == "dqn"):
-        agent = DQLearningAgent()
+        agent = DQLearningAgent(
+          state_shape=env.observation_space.shape,
+          action_shape=env.action_space,
+          memory_capacity=cfg.hyper.memory_capacity,
+          discount=cfg.hyper.discount,
+          lr=cfg.hyper.lr,
+          batchsize=cfg.hyper.batchsize
+      )
     return agent
 
 def render(cfg: ParserConfig):
@@ -69,11 +76,12 @@ def render(cfg: ParserConfig):
             while not (terminated or truncated):
                 env.render()
 
+                prev_obs = obs
                 action = agent.act(obs, env.action_space.sample, epsilon)
 
                 obs, r, terminated, truncated, _ = env.step(action)
 
-                agent.learn(obs, r)
+                agent.learn(prev_obs, action, obs, r, terminated)
 
                 epsilon = max(cfg.hyper.epsilon_end, epsilon * cfg.hyper.epsilon_decay)
 
