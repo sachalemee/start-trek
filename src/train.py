@@ -54,7 +54,7 @@ class TrainMode(Mode):
 
     def record_episode_score(self, episode_score: float) -> bool:
         self.episode_scores.append(episode_score)
-        if len(self.episode_scores) >= self.cfg.env.mean_steps:
+        if len(self.episode_scores) >= self.cfg.env.mean_steps and len(self.episode_scores) != 0:
             mean_score = sum(self.episode_scores) / len(self.episode_scores)
             if mean_score >= self.cfg.env.mean:
                 print(f"Mean score : {mean_score} >= {self.cfg.env.mean}")

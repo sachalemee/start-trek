@@ -49,8 +49,11 @@ def render(cfg: ParserConfig, args):
  
     if cfg.env.render_mode == RenderMode.RECORD:
         if cfg.env.load and os.path.isdir("data_" + cfg.env.model):
-            shutil.rmtree("data_" + cfg.env.model + CSVPATH)
-            shutil.rmtree("data_" + cfg.env.model + "/videos")
+            try:
+                shutil.rmtree("data_" + cfg.env.model + CSVPATH)
+                shutil.rmtree("data_" + cfg.env.model + "/videos")
+            except FileNotFoundError:
+                pass
         if not (args.override or cfg.env.load) and os.path.isdir("data_" + cfg.env.model):
             print("Error: could not override " + cfg.env.model + " folder")
             print("Use --override-data to override current data folder")
