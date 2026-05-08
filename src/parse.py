@@ -91,6 +91,8 @@ class EnvConfig:
     enable_wind: bool
     wind_power: float
     turbulence_power: float
+    mean: int
+    mean_steps: int
     load: float
 
     def load(self, data: dict):
@@ -121,6 +123,8 @@ class EnvConfig:
         self.enable_wind = parse_bool("enable_wind", data)
         self.wind_power = parse_float("wind_power", data, True)
         self.turbulence_power = parse_float("turbulence_power", data, True)
+        self.mean = parse_int("mean", data, True, (self.render_mode == RunMode.TRAIN))
+        self.mean_steps = parse_int("mean_steps", data, True, (self.render_mode == RunMode.TRAIN))
         self.load = parse_bool("load", data, False)
 
 class HyperConfig:

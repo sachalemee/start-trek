@@ -18,7 +18,6 @@ from src.train import TrainMode
 from src.eval import EvalMode
 from src.parse import ParserConfig, RenderMode, RunMode
 
-
 CSVPATH = "/csv"
 EPPATH = CSVPATH + "/episodes"
 
@@ -63,6 +62,7 @@ def render(cfg: ParserConfig, args):
                 pass
         env = trigger_videos(env, cfg.env.trigger_video, cfg.env.model)
     try:
+        total_r = 0
         for episode in tqdm(range(cfg.env.nb_loop)):
             terminated = False
             truncated  = False
@@ -81,8 +81,14 @@ def render(cfg: ParserConfig, args):
 
                 ep_r += r
 
+            success = mode.record_episode_score(total_r)
+
             df.loc[len(df)] = [episode, ep_r]
             obs, _ = env.reset()
+
+            if success:
+                break
+
         mode.end(agent)
     except KeyboardInterrupt:
         mode.end(agent)
