@@ -17,6 +17,7 @@ from src.mode import Mode
 from src.train import TrainMode
 from src.eval import EvalMode
 from src.parse import ParserConfig, RenderMode, RunMode
+from src.termination import classify_termination, lander_position
 
 CSVPATH = "/csv"
 EPPATH = CSVPATH + "/episodes"
@@ -31,7 +32,7 @@ def render(cfg: ParserConfig, args):
     if cfg.env.render_mode == RenderMode.HUMAN:
         render_mode = "human"
     
-    df = pd.DataFrame(columns=["episode", "total_reward"])
+    df = pd.DataFrame(columns=["episode", "total_reward", "cause", "x", "y"])
 
     env = gym.make(
         "LunarLander-v3",
@@ -66,6 +67,7 @@ def render(cfg: ParserConfig, args):
         env = trigger_videos(env, cfg.env.trigger_video, cfg.env.model)
     try:
         total_r = 0
+        nb_r = 0
         for episode in tqdm(range(cfg.env.nb_loop)):
             terminated = False
             truncated  = False
@@ -84,9 +86,13 @@ def render(cfg: ParserConfig, args):
 
                 ep_r += r
 
-            success = mode.record_episode_score(total_r)
+            cause = classify_termination(terminated, truncated, obs, r)
+            x, y  = lander_position(obs)
 
-            df.loc[len(df)] = [episode, ep_r]
+            success = mode.record_episode_score(ep_r)
+
+            df.loc[len(df)] = [episode, ep_r, cause.value, x, y]
+            nb_r += 1
             obs, _ = env.reset()
 
             if success:
@@ -96,6 +102,7 @@ def render(cfg: ParserConfig, args):
     except KeyboardInterrupt:
         mode.end(agent)
     env.close()
+    print(total_r / nb_r)
     os.mkdir("data_" + cfg.env.model + CSVPATH)
     df.to_csv("data_" + cfg.env.model + EPPATH + ".csv", index=False)
 
