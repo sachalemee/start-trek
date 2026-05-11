@@ -14,74 +14,62 @@ import numpy as np
 from src.agent import Agent
 
 class ReplayMemory:
-    def __init__(self, capacity: int):
+    def __init__(self, capacity: int, state_shape: tuple):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.capacity = capacity
-        self.states = []
-        self.actions = []
-        self.next_states = []
-        self.rewards = []
-        self.dones = []
+        self.size = 0
         self.idx = 0
 
-    def __len__(self):
-        return len(self.states)
+        self.states = np.zeros((capacity, *state_shape), dtype=np.float32)
+        self.actions = np.zeros(capacity, dtype=np.int64)
+        self.next_states = np.zeros((capacity, *state_shape), dtype=np.float32)
+        self.rewards = np.zeros(capacity, dtype=np.float32)
+        self.terminated = np.zeros(capacity, dtype=np.float32)
 
-    def store(self, state, action, next_state, reward, done):
-        if len(self.states) < self.capacity:
-            self.states.append(state)
-            self.actions.append(action)
-            self.next_states.append(next_state)
-            self.rewards.append(reward)
-            self.dones.append(done)
-        else:
-            self.states[self.idx] = state
-            self.actions[self.idx] = action
-            self.next_states[self.idx] = next_state
-            self.rewards[self.idx] = reward
-            self.dones[self.idx] = done
+    def __len__(self) -> int:
+        return self.size
+
+    def store(self, state, action, next_state, reward, terminated) -> None:
+        self.states[self.idx] = state
+        self.actions[self.idx] = action
+        self.next_states[self.idx]= next_state
+        self.rewards[self.idx] = reward
+        self.terminated[self.idx] = float(terminated)
         self.idx = (self.idx + 1) % self.capacity
+        self.size = min(self.size + 1, self.capacity)
 
-    def sample(self, batchsize):
-        idx = random.sample(range(len(self.states)), k=batchsize)
-        states = torch.from_numpy(np.array(self.states)[idx]).float().to(self.device)
-        actions = torch.from_numpy(np.array(self.actions)[idx]).long().to(self.device)
-        next_states = torch.from_numpy(np.array(self.next_states)[idx]).float().to(self.device)
-        rewards = torch.from_numpy(np.array(self.rewards)[idx]).float().to(self.device)
-        dones = torch.from_numpy(np.array(self.dones)[idx]).float().to(self.device)
-        return states, actions, next_states, rewards, dones
+    def sample(self, batchsize: int):
+        idx = np.random.choice(self.size, size=batchsize, replace=False)
+        states = torch.from_numpy(self.states[idx]).to(self.device)
+        actions = torch.from_numpy(self.actions[idx]).to(self.device)
+        next_states = torch.from_numpy(self.next_states[idx]).to(self.device)
+        rewards = torch.from_numpy(self.rewards[idx]).to(self.device)
+        terminated = torch.from_numpy(self.terminated[idx]).to(self.device)
+        return states, actions, next_states, rewards, terminated
 
 
 class DuelingNetwork(nn.Module):
-
     def __init__(self, state_shape: int, action_shape: int, lr: float):
-        super(DuelingNetwork, self).__init__()
-
+        super().__init__()
         self.features = nn.Sequential(
-            nn.Linear(state_shape, 128),
-            nn.ReLU(),
-            nn.Linear(128, 128),
-            nn.ReLU(),
+            nn.Linear(state_shape, 128), nn.ReLU(),
+            nn.Linear(128, 128), nn.ReLU(),
         )
         self.value_stream = nn.Sequential(
-            nn.Linear(128, 64),
-            nn.ReLU(),
+            nn.Linear(128, 64), nn.ReLU(),
             nn.Linear(64, 1),
         )
         self.advantage_stream = nn.Sequential(
-            nn.Linear(128, 64),
-            nn.ReLU(),
+            nn.Linear(128, 64), nn.ReLU(),
             nn.Linear(64, action_shape),
         )
-
         self.optimizer = optim.Adam(self.parameters(), lr=lr)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        features = self.features(x)
-        value = self.value_stream(features)
-        advantage = self.advantage_stream(features)
-        q = value + advantage - advantage.mean(dim=1, keepdim=True)
-        return q
+        f = self.features(x)
+        v = self.value_stream(f)
+        a = self.advantage_stream(f)
+        return v + a - a.mean(dim=1, keepdim=True)
 
 
 class DQNAgent(Agent):
@@ -105,7 +93,7 @@ class DQNAgent(Agent):
         self.step_count = 0
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        self.memory = ReplayMemory(memory_capacity)
+        self.memory = ReplayMemory(memory_capacity, state_shape)
         self.online = DuelingNetwork(state_shape[0], action_shape.n, lr).to(self.device)
         self.target = DuelingNetwork(state_shape[0], action_shape.n, lr).to(self.device)
         self.target.eval()
@@ -129,22 +117,28 @@ class DQNAgent(Agent):
             action = self.online(obs).squeeze(0).argmax()
         return action.item()
 
-    def learn(self, state, action, next_state, reward, done) -> None:
-        self.memory.store(state, action, next_state, reward, done)
+    def learn(self, state, action, next_state, reward, terminated, truncated) -> None:
+        self.memory.store(state, action, next_state, reward, terminated)
         self.step_count += 1
+
         if len(self.memory) < self.batchsize or self.step_count % self.learn_every != 0:
             return
+
         if self.last_update >= self.target_update:
             self.update_target()
         else:
             self.last_update += 1
-        states, actions, next_states, rewards, dones = self.memory.sample(self.batchsize)
+
+        states, actions, next_states, rewards, terminated_batch = self.memory.sample(self.batchsize)
+
         q_pred = self.online(states).gather(1, actions.view(-1, 1))
+
         with torch.no_grad():
             next_actions = self.online(next_states).argmax(dim=1, keepdim=True)
-            q_next = self.target(next_states).gather(1, next_actions)
-            q_next = q_next.squeeze(1) * (1.0 - dones)
+            q_next = self.target(next_states).gather(1, next_actions).squeeze(1)
+            q_next = q_next * (1.0 - terminated_batch)
             y_j = (rewards + self.discount * q_next).view(-1, 1)
+
         loss = F.huber_loss(q_pred, y_j)
         self.online.optimizer.zero_grad()
         loss.backward()
@@ -157,4 +151,4 @@ class DQNAgent(Agent):
     def load(self, filename: str) -> None:
         self.online.load_state_dict(torch.load(filename, map_location=self.device))
         self.update_target()
-        self.online.eval()
+        self.online.train()

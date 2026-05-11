@@ -67,7 +67,8 @@ def render(cfg: ParserConfig, args):
         env = trigger_videos(env, cfg.env.trigger_video, cfg.env.model)
     try:
         nb_r = 0
-        for episode in tqdm(range(cfg.env.nb_loop)):
+        for episode in tqdm(range(mode.nb_loop)):
+            ep_r = 0
             terminated = False
             truncated  = False
             while not (terminated or truncated):
@@ -77,9 +78,8 @@ def render(cfg: ParserConfig, args):
                 action   = agent.act(obs, env.action_space.sample, mode.epsilon)
  
                 obs, r, terminated, truncated, _ = env.step(action)
-                done = terminated or truncated
 
-                mode.step(agent, prev_obs, action, obs, r, done)
+                mode.step(agent, prev_obs, action, obs, r, terminated, truncated)
 
                 ep_r += r
 
@@ -92,6 +92,13 @@ def render(cfg: ParserConfig, args):
             nb_r += 1
             obs, _ = env.reset()
 
+            if (episode % cfg.env.mean_steps == 0
+                and cfg.env.run_mode == RunMode.TRAIN
+                and episode != 0):
+                print(f"Mean reward over last {cfg.env.mean_steps}"
+                      f" episodes from the {episode} episode: "
+                      f"{sum(mode.episode_scores) / len(mode.episode_scores)}")
+
             if success:
                 break
 
@@ -99,6 +106,7 @@ def render(cfg: ParserConfig, args):
     except KeyboardInterrupt:
         mode.end(agent)
     env.close()
+    
     os.mkdir("data_" + cfg.env.model + CSVPATH)
     df.to_csv("data_" + cfg.env.model + EPPATH + ".csv", index=False)
 
