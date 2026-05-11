@@ -66,13 +66,10 @@ def render(cfg: ParserConfig, args):
                 pass
         env = trigger_videos(env, cfg.env.trigger_video, cfg.env.model)
     try:
-        total_r = 0
         nb_r = 0
         for episode in tqdm(range(cfg.env.nb_loop)):
             terminated = False
             truncated  = False
-            r = 0
-            ep_r = 0
             while not (terminated or truncated):
                 env.render()
  
@@ -102,7 +99,6 @@ def render(cfg: ParserConfig, args):
     except KeyboardInterrupt:
         mode.end(agent)
     env.close()
-    print(total_r / nb_r)
     os.mkdir("data_" + cfg.env.model + CSVPATH)
     df.to_csv("data_" + cfg.env.model + EPPATH + ".csv", index=False)
 
