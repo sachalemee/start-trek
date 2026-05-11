@@ -50,4 +50,4 @@ class EvalMode(Mode):
         self.episode_scores.append(episode_score)
 
     def end(self, agent: Agent) -> None:
-        print(f"Mean score for {len(self.episode_scores)} épisodes: {sum(self.episode_scores) / len(self.episode_scores)}")
+        print(f"Mean score for {len(self.episode_scores)} episodes: {sum(self.episode_scores) / len(self.episode_scores)}")

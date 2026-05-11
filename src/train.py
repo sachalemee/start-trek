@@ -47,12 +47,12 @@ class TrainMode(Mode):
 
     def step(self, agent: Agent, prev_obs, action, obs, reward, terminated, truncated) -> None:
         agent.learn(prev_obs, action, obs, reward, terminated, truncated)
+
+    def record_episode_score(self, episode_score: float) -> bool:
         self.epsilon = max(
             self.cfg.hyper.epsilon_end,
             self.epsilon * self.cfg.hyper.epsilon_decay,
         )
-
-    def record_episode_score(self, episode_score: float) -> bool:
         self.episode_scores.append(episode_score)
         if len(self.episode_scores) >= self.cfg.env.mean_steps:
             mean_score = sum(self.episode_scores) / len(self.episode_scores)

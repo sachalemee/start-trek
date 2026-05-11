@@ -39,7 +39,7 @@ class ReplayMemory:
         self.size = min(self.size + 1, self.capacity)
 
     def sample(self, batchsize: int):
-        idx = np.random.choice(self.size, size=batchsize, replace=False)
+        idx = np.random.randint(0, self.size, size=batchsize)
         states = torch.from_numpy(self.states[idx]).to(self.device)
         actions = torch.from_numpy(self.actions[idx]).to(self.device)
         next_states = torch.from_numpy(self.next_states[idx]).to(self.device)
