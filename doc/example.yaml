@@ -34,7 +34,11 @@ hyper: {
   memory_capacity: 50000,
   target_update: 1000,
 
-  discretisation:
+  ### Optional for q-learning discretization ###
+  discretisation: {
+    bins: [5, 5, 20, 20, 15, 20, 2, 2],
+    zoom: 1.0
+  }
 }
 
 seed: 67
