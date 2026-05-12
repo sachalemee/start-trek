@@ -14,6 +14,7 @@ from src.parse import ParserConfig
 from src.agent import Agent
 from src.dqn import DQNAgent
 from src.qlearn import QLearningAgent
+from src.discretizer import Discretizer
 
 class TrainMode(Mode):
 
@@ -25,10 +26,12 @@ class TrainMode(Mode):
 
     def load_agent(self, env: gym.Env) -> Agent:
         if self.cfg.algo == "qlearn":
+            discretizer = Discretizer.from_dict(self.cfg.hyper.discretisation)
             agent = QLearningAgent(
                 self.cfg.hyper.lr,
                 self.cfg.hyper.discount,
                 env.observation_space.shape,
+                discretizer=discretizer,
             )
         else:
             agent = DQNAgent(
