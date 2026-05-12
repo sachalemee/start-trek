@@ -84,7 +84,7 @@ class DQNAgent(Agent):
         batchsize: int,
         target_update: int,
         grad_clip: float = 10.0,
-        learn_every: int = 4,
+        learn_every: int = 2,
     ):
         self.discount = discount
         self.batchsize = batchsize
