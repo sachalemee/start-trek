@@ -2,17 +2,17 @@ algo: dqn # dqn or qlearn
 
 env: {
   ### Mandatory ###
-  run_mode: EVAL, # TRAIN, EVAL
-  model: data_dqn_model/model,
-  nb_loop: 10000,
-  max_episode_steps: 500,
+  run_mode: TRAIN, # TRAIN, EVAL
+  model: dqn,
+  nb_loop: 1000,
+  max_episode_steps: 1000,
   enable_wind: False,
   wind_power: 0.0,
   turbulence_power: 0.0,
   render_mode: RECORD, # HUMAN, RECORD, NONE
 
   ### Mandatory for RECORD render_mode ###
-  trigger_video: 100,
+  trigger_video: 10,
 
   ### Mandatory for trainning ###
   mean: 210, #  Mean to success criteria
@@ -24,15 +24,17 @@ env: {
 
 hyper: {
   epsilon_start: 1.0,
-  epsilon_end: 0.0,
+  epsilon_end: 0.05,
   epsilon_decay: 0.995,
   discount: 0.99,
   lr: 0.0001,
 
   ### Mandatory for dqn algo ###
   batchsize: 64,
-  memory_capacity: 100000,
+  memory_capacity: 50000,
   target_update: 1000,
+
+  discretisation:
 }
 
 seed: 67
