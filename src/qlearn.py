@@ -7,6 +7,7 @@
 
 import numpy as np
 from src.agent import Agent
+from src.discretizer import Discretizer
 
 EZOOM_VAL = 1
 
@@ -28,18 +29,24 @@ class QLearningAgent(Agent):
     Qtable: np.array
     lr: float
     discount: float
+    discretizer: Discretizer
 
     ls: list[6: int] = []
     la: int = -1
 
-    def __init__(self, lr, discount, action_shape):
+    def __init__(self, lr, discount, action_shape, discretizer: Discretizer = None):
         self.lr = lr
         self.discount = discount
         self.action_shape = action_shape
-        self.Qtable = np.zeros(states_d + action_shape)
+        
+        # use provide discretizer/create default one
+        if discretizer is None:
+            self.discretizer = Discretizer(states_d, EZOOM_VAL)
+        else:
+            self.discretizer = discretizer
     
-    def process(self, obs: list[8: float]) -> list[6: int]:
-        return tuple([round(e * EZOOM_VAL) for e in obs])
+    def process(self, obs: list[8: float]) -> tuple:
+        return self.discretizer.discretize(obs)
 
     def act(self, obs: list[8: float], fallback: callable, epsilon: float = 0.0) -> list[2: float]:
         self.ls = self.process(obs)
