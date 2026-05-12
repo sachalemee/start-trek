@@ -17,3 +17,6 @@ class Discretizer:
 
     def discretize(self, obs: List[float]) -> Tuple[int, ...]:
         return tuple([round(e * self.zoom) for e in obs]) # transforme l'obs contunue en indices discrets et crée un tuple pour accéder à la qtable
+
+    def get_state_shape(self) -> Tuple[int, ...]:
+        return self.state_shape
