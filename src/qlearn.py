@@ -44,6 +44,9 @@ class QLearningAgent(Agent):
             self.discretizer = Discretizer(states_d, EZOOM_VAL)
         else:
             self.discretizer = discretizer
+            
+        # initialize qtable with discretizer's state shape
+        self.Qtable = np.zeros(self.discretizer.get_state_shape() + action_shape)
     
     def process(self, obs: list[8: float]) -> tuple:
         return self.discretizer.discretize(obs)
