@@ -106,7 +106,7 @@ class DQNAgent(Agent):
         self.target.load_state_dict(self.online.state_dict())
         self.last_update = 0
 
-    def act(self, obs, fallback: callable, epsilon: float = 0.0) -> int:
+    def policy(self, obs, fallback: callable, epsilon: float = 0.0) -> int:
         if random.random() < epsilon:
             return fallback()
         if not torch.is_tensor(obs):
