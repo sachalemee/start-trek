@@ -51,14 +51,12 @@ class QLearningAgent(Agent):
     def process(self, obs: list[8: float]) -> tuple:
         return self.discretizer.discretize(obs)
 
-    def act(self, obs: list[8: float], fallback: callable, epsilon: float = 0.0) -> list[2: float]:
+    def policy(self, obs: list[8: float], fallback: callable, epsilon: float = 0.0) -> list[2: float]:
         self.ls = self.process(obs)
         if np.random.rand() > epsilon and np.max(self.Qtable[self.ls]) > 0.:
             action = np.argmax(self.Qtable[self.ls])
-            self.la = action
         else:
             action = fallback()
-            self.la = action
         return action
 
     def learn(self, prev_obs, action, obs, r, terminated, truncated) -> None:
@@ -73,8 +71,8 @@ class QLearningAgent(Agent):
         future_optimal_value = np.max(self.Qtable[obs])
         learned_value = r + self.discount * future_optimal_value
 
-        old_value = self.Qtable[self.ls][self.la]
-        self.Qtable[self.ls][self.la] = (1-self.lr) * old_value + self.lr * learned_value
+        old_value = self.Qtable[self.ls][action]
+        self.Qtable[self.ls][action] = (1-self.lr) * old_value + self.lr * learned_value
 
     def save(self, filename) -> None:
         np.save(filename, self.Qtable)

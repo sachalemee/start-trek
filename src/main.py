@@ -75,7 +75,7 @@ def render(cfg: ParserConfig, args):
                 env.render()
  
                 prev_obs = obs
-                action   = agent.act(obs, env.action_space.sample, mode.epsilon)
+                action   = agent.policy(obs, env.action_space.sample, mode.epsilon)
  
                 obs, r, terminated, truncated, _ = env.step(action)
 
@@ -98,6 +98,7 @@ def render(cfg: ParserConfig, args):
                 print(f"Mean reward over last {cfg.env.mean_steps}"
                       f" episodes from the {episode} episode: "
                       f"{sum(mode.episode_scores) / len(mode.episode_scores)}")
+                print(f"Current exploration chance : {mode.epsilon * 100:.0f} %")
 
             if success:
                 break

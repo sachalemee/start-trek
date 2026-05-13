@@ -12,8 +12,8 @@ class AgentMeta(type):
     def __subclasscheck__(cls, subclass):
         return (hasattr(subclass, 'learn') and
                 callable(subclass.learn) and
-                hasattr(subclass, 'act') and
-                callable(subclass.act) and
+                hasattr(subclass, 'policy') and
+                callable(subclass.policy) and
                 hasattr(subclass, 'save') and
                 callable(subclass.save) and
                 hasattr(subclass, 'load') and
