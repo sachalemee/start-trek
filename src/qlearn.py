@@ -7,6 +7,7 @@
 
 import numpy as np
 from src.agent import Agent
+from src.discretizer import Discretizer
 
 EZOOM_VAL = 1
 
@@ -28,27 +29,34 @@ class QLearningAgent(Agent):
     Qtable: np.array
     lr: float
     discount: float
+    discretizer: Discretizer
 
     ls: list[6: int] = []
     la: int = -1
 
-    def __init__(self, lr, discount, action_shape):
+    def __init__(self, lr, discount, action_shape, discretizer: Discretizer = None):
         self.lr = lr
         self.discount = discount
         self.action_shape = action_shape
-        self.Qtable = np.zeros(states_d + action_shape)
+        
+        # use provide discretizer/create default one
+        if discretizer is None:
+            self.discretizer = Discretizer(states_d, EZOOM_VAL)
+        else:
+            self.discretizer = discretizer
+            
+        # initialize qtable with discretizer's state shape
+        self.Qtable = np.zeros(self.discretizer.get_state_shape() + action_shape)
     
-    def process(self, obs: list[8: float]) -> list[6: int]:
-        return tuple([round(e * EZOOM_VAL) for e in obs])
+    def process(self, obs: list[8: float]) -> tuple:
+        return self.discretizer.discretize(obs)
 
-    def act(self, obs: list[8: float], fallback: callable, epsilon: float = 0.0) -> list[2: float]:
+    def policy(self, obs: list[8: float], fallback: callable, epsilon: float = 0.0) -> list[2: float]:
         self.ls = self.process(obs)
         if np.random.rand() > epsilon and np.max(self.Qtable[self.ls]) > 0.:
             action = np.argmax(self.Qtable[self.ls])
-            self.la = action
         else:
             action = fallback()
-            self.la = action
         return action
 
     def learn(self, prev_obs, action, obs, r, terminated, truncated) -> None:
@@ -63,8 +71,8 @@ class QLearningAgent(Agent):
         future_optimal_value = np.max(self.Qtable[obs])
         learned_value = r + self.discount * future_optimal_value
 
-        old_value = self.Qtable[self.ls][self.la]
-        self.Qtable[self.ls][self.la] = (1-self.lr) * old_value + self.lr * learned_value
+        old_value = self.Qtable[self.ls][action]
+        self.Qtable[self.ls][action] = (1-self.lr) * old_value + self.lr * learned_value
 
     def save(self, filename) -> None:
         np.save(filename, self.Qtable)
