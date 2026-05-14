@@ -30,7 +30,6 @@ class TrainMode(Mode):
             agent = QLearningAgent(
                 self.cfg.hyper.lr,
                 self.cfg.hyper.discount,
-                env.observation_space.shape,
                 discretizer=discretizer,
             )
         else:

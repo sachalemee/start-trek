@@ -8,25 +8,29 @@
 import numpy as np
 from typing import Tuple, List
 
+baseBins = (5, 5, 20, 20, 15, 20, 2, 2)
+
 class Discretizer:
 
     def __init__(self, bins: Tuple[int, ...], zoom: float = 1.0):
-        self.bins = bins # bins par dimension
+        self.bins = bins
         self.zoom = zoom
-        self.state_shape = bins # forme de la qtable
 
     def discretize(self, obs: List[float]) -> Tuple[int, ...]:
-        return tuple([round(e * self.zoom) for e in obs]) # transforme l'obs contunue en indices discrets et crée un tuple pour accéder à la qtable
+        tmp = ()
+        for i in range(len(obs)):
+            tmp += (round((obs[i] * (self.bins[i] / baseBins[i])) * self.zoom),)
+        return tmp
 
     def get_state_shape(self) -> Tuple[int, ...]:
-        return self.state_shape
+        return self.bins
 
     def from_dict(config: dict) -> 'Discretizer':
         if not config:
-            bins = (5, 5, 20, 20, 15, 20, 2, 2)
+            bins = baseBins
             zoom = 1.0
         else:
-            bins = config.get('bins', (5, 5, 20, 20, 15, 20, 2, 2))
+            bins = config.get('bins', baseBins)
             zoom = config.get('zoom', 1.0)
 
             if not isinstance(bins, (list, tuple)):

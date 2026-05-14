@@ -9,22 +9,7 @@ import numpy as np
 from src.agent import Agent
 from src.discretizer import Discretizer
 
-EZOOM_VAL = 1
-
-states_d = (5,5,20,20,15,20,2,2)
-
-# lr = 0.8 # a quel point tu favorise les nouvelles infos
-# discount_factor = 0.95 # valuation des récompenses
-# exploration_prob = 0.2 # exploration
-
-# ED = [2.5, 2.5, 10., 10., 6.2831855, 10.]
-# n_states = prod([round(e * EZOOM_VAL) * 2 for e in ED])
-
-# AD = [1., 1.]
-# n_actions = prod([round(e * AZOOM_VAL) * 2 for e in AD])
-
 class QLearningAgent(Agent):
-
 
     Qtable: np.array
     lr: float
@@ -32,12 +17,10 @@ class QLearningAgent(Agent):
     discretizer: Discretizer
 
     ls: list[6: int] = []
-    la: int = -1
 
-    def __init__(self, lr, discount, action_shape, discretizer: Discretizer = None):
+    def __init__(self, lr, discount, discretizer: Discretizer = None):
         self.lr = lr
         self.discount = discount
-        self.action_shape = action_shape
         
         # use provide discretizer/create default one
         if discretizer is None:
@@ -46,33 +29,27 @@ class QLearningAgent(Agent):
             self.discretizer = discretizer
             
         # initialize qtable with discretizer's state shape
-        self.Qtable = np.zeros(self.discretizer.get_state_shape() + action_shape)
+        self.Qtable = np.zeros(self.discretizer.get_state_shape() + (4,))
     
     def process(self, obs: list[8: float]) -> tuple:
         return self.discretizer.discretize(obs)
 
     def policy(self, obs: list[8: float], fallback: callable, epsilon: float = 0.0) -> list[2: float]:
         self.ls = self.process(obs)
-        if np.random.rand() > epsilon and np.max(self.Qtable[self.ls]) > 0.:
+        if np.random.rand() > epsilon:
             action = np.argmax(self.Qtable[self.ls])
         else:
             action = fallback()
         return action
 
     def learn(self, prev_obs, action, obs, r, terminated, truncated) -> None:
-        """
-        Calculate the best move to get the highest reward
-
-        Parameters:
-          obs: the observation state as an 8 dimentional vector
-          r: the reward of the last episode, or None if it is the first episode
-        """
         obs = self.process(obs)
-        future_optimal_value = np.max(self.Qtable[obs])
-        learned_value = r + self.discount * future_optimal_value
 
-        old_value = self.Qtable[self.ls][action]
-        self.Qtable[self.ls][action] = (1-self.lr) * old_value + self.lr * learned_value
+        future_optimal_action = np.max(self.Qtable[obs])
+        if terminated or truncated:
+            self.Qtable[obs] += self.lr * (r + future_optimal_action - self.Qtable[obs])
+        else:
+            self.Qtable[obs] += self.lr * (r - self.Qtable[obs])
 
     def save(self, filename) -> None:
         np.save(filename, self.Qtable)

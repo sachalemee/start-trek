@@ -31,7 +31,7 @@ def render(cfg: ParserConfig, args):
     render_mode = "rgb_array"
     if cfg.env.render_mode == RenderMode.HUMAN:
         render_mode = "human"
-    
+
     df = pd.DataFrame(columns=["episode", "total_reward", "cause", "x", "y"])
 
     env = gym.make(
