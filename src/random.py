@@ -15,3 +15,6 @@ class RandomAgent(Agent):
 
     def learn(self, prev_obs, action, obs, r, terminated, truncated) -> None:
         pass
+    
+    def load(self, filename) -> None:
+        pass
