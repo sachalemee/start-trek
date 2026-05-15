@@ -13,6 +13,7 @@ from src.parse import ParserConfig
 from src.agent import Agent
 from src.dqn import DQNAgent
 from src.qlearn import QLearningAgent
+from src.random import RandomAgent
 
 
 class EvalMode(Mode):
@@ -30,7 +31,7 @@ class EvalMode(Mode):
                 self.cfg.hyper.discount,
                 env.observation_space.shape,
             )
-        else:
+        elif self.cfg.algo == "dqn":
             agent = DQNAgent(
                 state_shape=env.observation_space.shape,
                 action_shape=env.action_space,
@@ -40,6 +41,8 @@ class EvalMode(Mode):
                 batchsize=self.cfg.hyper.batchsize,
                 target_update=self.cfg.hyper.target_update,
             )
+        else:
+            agent = RandomAgent()
         agent.load(self.cfg.env.model)
         return agent
 

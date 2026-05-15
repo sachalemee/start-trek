@@ -19,7 +19,7 @@ class RenderMode(Enum):
     RECORD = "RECORD"
     HUMAN  = "HUMAN"
 
-SUPPORTED_ALGOS = {"qlearn", "dqn"}
+SUPPORTED_ALGOS = {"qlearn", "dqn", "random"}
 
 def parse_float(key: str, data: dict, positive: bool) -> float:
     if key in data:
