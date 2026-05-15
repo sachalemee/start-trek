@@ -42,6 +42,9 @@ echo ""
 
 echo -e "${BLUE}[4/4] Generating reports.${NOCOLOR}"
 if [ -f "review.py" ]; then
+    ./review.py data_dqn
+    ./review.py data_qlearn
+    ./review.py data_test_model
     echo -e "${GREEN}Reports generated${NOCOLOR}"
 else
     echo -e "${YELLOW}review.py not found${NOCOLOR}"
