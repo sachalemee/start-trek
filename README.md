@@ -10,7 +10,7 @@ By *Ariel Amriou*(ariel.amriou@epitech.eu), *Pierrick Simon*(pierrick.simon@epit
 
 Train a Lunar Lander agent using Reinforcement Learning to autonomously land safely on the Moon (Gymnasium LunarLander-v3 environment).
 
-- "You will program an algorithm that enables the module to correct its own trajectory. It will be a reinforcement-learning agent that learns by trial and error from sparse rewards" *(From [START TREK - EPITECH Subject](doc/G-AIA-401_start_trek.pdf))*
+- "You will program an algorithm that enables the module to correct its own trajectory. It will be a reinforcement-learning agent that learns by trial and error from sparse rewards" *(From the START TREK EPITECH subject)*
 
 **Success criteria:** score > 200 over 100 consecutive episodes.
 
@@ -34,13 +34,13 @@ This project requires the following dependencies:
 1. **Clone the repository:**
 
 ```sh
-git clone git@github.com:EpitechPGE2-2025/G-AIA-401-PAR-4-1-starttrek-16.git
+git clone git@github.com:sachalemee/start-trek.git
 ```
 
 2. **Navigate to the project directory:**
 
 ```sh
-cd G-AIA-401-PAR-4-1-starttrek-16
+cd start-trek
 ```
 
 3. **install dependencies:**
@@ -53,7 +53,7 @@ pip install -r requirements.txt
 
 ## Documentation
 
-See [START TREK - Documentation](doc/DOCUMENTATION.md)
+See the [START TREK - Report](doc/G-AIA-401_start_trek_Report.pdf)
 
 ## License
 
